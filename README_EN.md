@@ -1,5 +1,5 @@
 # Blender Wing Generator: Wing Model
-[简体中文](README.zh-CN.md) | English
+[简体中文](README.md) | English
 
 An AI-assisted Blender add-on for procedural bird-wing modeling, inspired by real bird-wing anatomy. You can customize feather length, position, shape, and group parameters, preview flapping motion, and generate a bird-wing model with a basic rig.
 ## Features
