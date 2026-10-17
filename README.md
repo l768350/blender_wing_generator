@@ -17,10 +17,10 @@
 1. 下载插件的 .zip 压缩包，不要解压。
 2. 将 .zip 文件直接拖入 Blender 窗口。
 3. 如果没有自动开始安装，可在 Blender 中打开 编辑（Edit）→ 偏好设置（Preferences）→ 插件（Add-ons），从右上角菜单选择 从磁盘安装（Install from Disk），然后选择该 .zip 文件。
-4. 启用 Wing Model 插件（如果安装后尚未自动启用）。
-5. 在 3D 视图中按 N 打开侧栏，找到 Wing Model 面板。
+4. 如果安装后尚未自动启用，启用 Blender Wing Generator 插件。
+5. 在 3D 视图中按 N 打开侧栏，找到 Blender Wing Generator 面板。
 ## 基本使用
-1. 在 3D 视图侧栏打开 Wing Model 面板。
+1. 在 3D 视图侧栏打开 Blender Wing Generator 面板。
 2. 选择一个翼型预设，或手动调整整体形态参数。
 3. 设置各组羽毛数量，并根据需要调整全局、分组或单根羽毛参数。
 4. 使用面板中的模型创建工具生成或重新生成模型。
