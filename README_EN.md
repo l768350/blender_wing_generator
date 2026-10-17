@@ -17,10 +17,10 @@ An AI-assisted Blender add-on for procedural bird-wing modeling, inspired by rea
 1. Download the add-on .zip archive. Do not extract it.
 2. Drag and drop the .zip file directly into the Blender window.
 3. If installation does not start automatically, open Edit → Preferences → Add-ons in Blender. From the menu in the upper-right corner, choose Install from Disk, then select the .zip file.
-4. Enable the Wing Model add-on if it has not been enabled automatically.
-5. In the 3D Viewport, press N to open the sidebar and find the Wing Model panel.
+4. Enable the Blender Wing Generator add-on if it has not been enabled automatically.
+5. In the 3D Viewport, press N to open the sidebar and find the Blender Wing Generator panel.
 ## Basic Usage
-1. Open the Wing Model panel in the 3D Viewport sidebar.
+1. Open the Blender Wing Generator panel in the 3D Viewport sidebar.
 2. Select a wing-shape preset or adjust the overall shape parameters manually.
 3. Set the feather counts for each group and adjust global, group-level, or individual-feather parameters as needed.
 4. Use the model-generation tools in the panel to create or regenerate the model.
