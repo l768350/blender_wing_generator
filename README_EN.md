@@ -24,7 +24,7 @@ An AI-assisted Blender add-on for procedural bird-wing modeling, inspired by rea
 2. Select a wing-shape preset or adjust the overall shape parameters manually.
 3. Set the feather counts for each group and adjust global, group-level, or individual-feather parameters as needed.
 4. Use the model-generation tools in the panel to create or regenerate the model.
-5. Use the motion tools to preview flapping and explore a spread-wing pose.
+5. Use the motion tools to preview flapping.
 6. When rigging is needed, use the corresponding tools to generate the main wing bone chain and feather bones, then perform skinning. Run the rig diagnostics when needed.
 Control names and specific features may change between versions. We recommend backing up your .blend file before regenerating the model or experimenting with rigging tools.
 ## Project Status
