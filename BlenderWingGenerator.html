@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+
+<html lang="zh"><head><meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<title>鸟翼骨骼与羽毛模型</title>
+<style>
+:root{--bg:#eef1ee;--fg:#1b2a2b;--mut:#5b6b6c;--ln:#cdd5d1;--pn:#f8faf8;--b1:#2f5d8a;--b2:#17806f;--b3:#b9801a;--tr:#8a9a97;--bd:#3a4a4a;--fp:#d9a441;--fs:#4aa896;--cp:#ecc77c;--cs:#86cdbf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1c;--fg:#e3ebe8;--mut:#93a6a3;--ln:#2a3c3e;--pn:#16262a;--b1:#6fa3d6;--b2:#4cc1ad;--b3:#e2ad45;--tr:#5d7572;--bd:#9fb4b0;--fp:#c98f2b;--fs:#2f8a7a;--cp:#e2b25a;--cs:#46a998}}
+:root[data-theme="dark"]{--bg:#0f1a1c;--fg:#e3ebe8;--mut:#93a6a3;--ln:#2a3c3e;--pn:#16262a;--b1:#6fa3d6;--b2:#4cc1ad;--b3:#e2ad45;--tr:#5d7572;--bd:#9fb4b0;--fp:#c98f2b;--fs:#2f8a7a;--cp:#e2b25a;--cs:#46a998}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 "Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+main{max-width:1680px;margin:0 auto;padding:14px 18px 40px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:var(--mut);margin:0 0 10px;font-size:13px}
+canvas{width:100%;height:clamp(300px,42vh,520px);min-height:280px;display:block;background:var(--pn);border:1px solid var(--ln);border-radius:6px;touch-action:none}
+.bar{display:flex;gap:10px;align-items:center;margin:8px 0}
+.bar input[type=range]{flex:1}
+button{font:inherit;background:var(--fg);color:var(--bg);border:0;border-radius:6px;padding:6px 14px}
+button.g{background:transparent;color:var(--fg);border:1px solid var(--ln)}
+.sm{font-size:13px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px;margin:6px 0}
+th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--ln)}
+th{color:var(--mut);font-weight:500}
+details{border-top:1px solid var(--ln);padding:8px 0}
+summary{cursor:pointer;font-weight:600}
+.jr{margin:8px 0 12px}
+.jr b{font-weight:500;font-size:13px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;color:var(--mut)}
+.g3 input{width:100%}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+ul{padding-left:18px;margin:6px 0}
+li{margin:3px 0}
+#fpsLimit{font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:4px;padding:3px 5px}
+input[type=number]{width:64px;font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:4px;padding:2px 4px}
+.length-control{border-top:1px solid var(--ln);margin-top:10px;padding-top:9px}
+.length-control .hint{margin:3px 0 8px}
+.length-control input[type=range]{width:100%;min-width:0}
+.length-control .g3 label{display:block;min-width:0}
+.length-control .g3 label span{float:right;font-variant-numeric:tabular-nums}
+#flEdit input[type=number]{width:76px;font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:4px;padding:2px 4px}
+.len-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}
+.form-control{border-top:1px solid var(--ln);margin-top:10px;padding-top:9px}
+.form-control select{width:100%;font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:5px;padding:6px;margin:5px 0 9px}
+.form-control input[type=range]{width:100%;min-width:0}
+.form-control .g3 label{display:block;min-width:0}
+.modifier-block{border-top:1px solid var(--ln);margin-top:12px;padding-top:10px}
+.modifier-block>b{display:block;margin-bottom:5px}
+.table-scroll{max-width:100%;overflow-x:auto}
+#flEdit{min-width:620px}
+#flEdit input[type=number]{width:72px}
+.combo-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:8px 0}
+.combo-targets label{font-size:13px;border:1px solid var(--ln);border-radius:5px;padding:5px}
+.combo-create-row{display:grid;grid-template-columns:minmax(0,1fr) 100px auto;gap:8px;align-items:end;margin:8px 0}
+.combo-create-row label{display:block}
+.combo-create-row select,.combo-create-row input{width:100%;font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:4px;padding:5px}
+@media(max-width:520px){.combo-create-row{grid-template-columns:1fr 90px}.combo-create-row button{grid-column:1 / -1}}
+.form-control .g3 label span{float:right;font-variant-numeric:tabular-nums}
+
+.layout-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.layout-toolbar button[aria-pressed="true"]{background:var(--b1);color:#fff;border-color:var(--b1)}
+.workspace{display:grid;gap:16px;align-items:start}
+.workspace.layout-split{grid-template-columns:minmax(360px,.88fr) minmax(520px,1.12fr)}
+.workspace.layout-stacked{grid-template-columns:minmax(0,1fr)}
+.viewer-pane,.control-pane{min-width:0}
+.workspace.layout-split .viewer-pane{position:sticky;top:10px;align-self:start}
+.visibility-controls{margin-top:10px;padding:10px;border:1px solid var(--ln);border-radius:8px;background:var(--pn)}
+.visibility-controls>strong{display:block;font-size:13px;margin-bottom:6px}
+.visibility-grid{display:flex;flex-wrap:wrap;gap:6px 12px}
+.visibility-grid label{font-size:13px}
+.main-settings{border:1px solid var(--ln);border-radius:9px;padding:10px 12px;margin:0 0 12px;background:var(--pn)}
+.main-settings>summary{font-size:16px;padding:2px 0 6px}
+.control-pane details{border-top:0}
+.motion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0}
+.motion-grid label{display:block;min-width:0;border:1px solid var(--ln);border-radius:7px;padding:8px;font-size:13px}
+.motion-grid select{width:100%;font:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--ln);border-radius:5px;padding:6px;margin-top:5px}
+.motion-grid input[type=range]{width:100%;display:block;margin-top:7px}
+.motion-grid label span{float:right;font-weight:600;font-variant-numeric:tabular-nums}
+.motion-hint{margin:4px 0 8px}
+.motion-subpanel{border:1px solid var(--ln);border-radius:7px;padding:9px;margin-top:8px;background:var(--bg)}
+.group-picker{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.group-picker button{background:transparent;color:var(--fg);border:1px solid var(--ln);padding:6px 10px;font-size:13px}
+.group-picker button[aria-pressed="true"]{background:var(--b2);color:#fff;border-color:var(--b2)}
+.group-description{margin:2px 0 8px;min-height:1.4em}
+.group-param-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.range-card{border:1px solid var(--ln);border-radius:8px;padding:9px 10px;background:var(--bg);min-width:0}
+.range-card label{display:block;font-size:13px}
+.range-title{display:flex;gap:8px;justify-content:space-between;align-items:baseline}
+.range-title span:last-child{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.range-card input[type=range]{width:100%;display:block;margin:8px 0 2px}
+.endpoint-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:8px}
+.endpoint-card{border:1px solid var(--ln);border-radius:8px;padding:9px 10px;background:var(--bg);min-width:0}
+.endpoint-card label{display:block;font-size:13px}
+.endpoint-card .endpoint-inputs{display:grid;grid-template-columns:minmax(0,1fr) 82px;gap:8px;align-items:center;margin-top:6px}
+.endpoint-card input[type=range]{width:100%;min-width:0}
+.endpoint-card input[type=number]{width:82px}
+.length-dist-reference-panel{border:1px solid var(--ln);border-radius:8px;padding:10px;margin-top:10px;background:var(--pn)}
+.reference-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.length-dist-reference-points{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.length-dist-point{border:1px solid var(--ln);border-radius:7px;padding:8px;background:var(--bg);min-width:0}
+.length-dist-point-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}
+.length-dist-point-head strong{font-size:13px}
+.length-dist-point .point-control{margin-top:6px}
+.length-dist-point .point-control label{display:flex;justify-content:space-between;gap:8px;font-size:12px;align-items:center}
+.length-dist-point .point-inputs{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:7px;align-items:center;margin-top:4px}
+.length-dist-point .point-inputs input[type=range]{width:100%;min-width:0}
+.length-dist-point .point-inputs input[type=number]{width:72px}
+.length-dist-point .remove-point{padding:3px 8px;font-size:12px}
+.length-dist-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.length-dist-tools select{font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:5px;padding:5px}
+.quick-values{display:flex;gap:5px;flex-wrap:wrap}
+.quick-values button{font-size:11px;padding:3px 8px}
+.value-pill{display:inline-block;font-size:12px;border:1px solid var(--ln);border-radius:20px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.combo-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.combo-item{border:1px solid var(--ln);border-radius:8px;padding:9px;min-width:0}
+.combo-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.combo-item-head strong{font-size:13px}
+.combo-item p{font-size:12px;color:var(--mut);margin:4px 0}
+.combo-item input[type=range]{width:100%}
+.combo-create-row input[type=range]{width:100%;padding:0}
+.advanced-shell{margin-top:22px;border:1px solid var(--ln);border-radius:9px;padding:10px 14px;background:var(--pn)}
+.advanced-shell>summary{font-size:15px;padding:2px}
+.advanced-shell details{margin-top:6px;padding-left:8px;padding-right:8px}
+.advanced-shell details[open]{background:color-mix(in srgb,var(--bg) 38%,transparent);border-radius:6px}
+.rare-motion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0}
+.rare-motion-grid label{display:block;border:1px solid var(--ln);border-radius:7px;padding:8px;font-size:13px}
+.rare-motion-grid input[type=range]{width:100%}
+#boneControls label{border:1px solid var(--ln);border-radius:7px;padding:8px;background:var(--pn)}
+#formControls label{border:1px solid var(--ln);border-radius:7px;padding:8px;background:var(--bg)}
+#comboValue{display:block;margin-top:5px}
+@media(max-width:1050px){.workspace.layout-split{grid-template-columns:minmax(0,1fr)}.workspace.layout-split .viewer-pane{position:static}.workspace.layout-split canvas{height:clamp(280px,58vw,420px)}}
+@media(max-width:600px){main{padding:10px}.group-param-controls,.combo-list,.endpoint-grid{grid-template-columns:minmax(0,1fr)}.rare-motion-grid{grid-template-columns:1fr}.combo-create-row{grid-template-columns:1fr}.combo-create-row button{grid-column:auto}.main-settings{padding:8px}.workspace{gap:10px}}
+
+
+.feather-count-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:8px 0}
+.feather-count-card{border:1px solid var(--ln);border-radius:8px;padding:9px;background:var(--pn);display:flex;flex-direction:column;gap:6px;min-width:0}
+.feather-count-card .count-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:600}
+.feather-count-card .count-number-row{display:grid;grid-template-columns:28px minmax(50px,1fr) 28px auto;gap:5px;align-items:center}
+.feather-count-card input[type=number]{width:100%;min-width:0;box-sizing:border-box;background:var(--bg);color:var(--fg);border:1px solid var(--ln);border-radius:5px;padding:5px;font:inherit}
+.feather-count-card button{padding:4px 8px;min-width:28px}
+.feather-count-card .count-sub{font-size:12px;opacity:.75;line-height:1.35}
+.count-global-actions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.feather-count-card.is-linked{opacity:.85}
+
+.feather-count-settings > .modifier-block { margin-top: 10px; }
+.feather-count-settings #featherCountEditor { margin: 0; }
+</style></head><body><main>
+<h1>鸟翼骨骼与羽毛模型</h1>
+<div aria-label="工作区布局" class="layout-toolbar" role="group">
+<span class="sm">工作区布局</span>
+<button aria-pressed="true" class="g" id="layoutSplit" type="button">左右分区</button>
+<button aria-pressed="false" class="g" id="layoutStack" type="button">上下分区</button>
+</div>
+<div class="workspace layout-split" id="workspace">
+<section aria-label="模型展示" class="viewer-pane" id="viewPane">
+<canvas id="c"></canvas>
+<div class="bar"><button id="pp">播放</button><input id="tt" max="1" min="0" step="0.005" type="range" value="0"/><span class="sm" id="ph"></span></div>
+<div class="bar"><label class="sm" for="fpsLimit">动画帧率</label><select aria-label="动画帧率" id="fpsLimit"><option value="15">15 FPS</option><option value="24">24 FPS</option><option selected="" value="30">30 FPS</option><option value="60">60 FPS</option></select></div>
+<div class="bar"><label class="sm" for="sp">拍翼速率</label><input id="sp" max="2" min="0.05" step="0.05" type="range" value="0.4"/><span class="value-pill" id="spValue">0.40×</span><button class="g" id="rs">重置</button></div>
+<p class="sm"><span class="sw" style="background:var(--b1)"></span>肱骨 <span class="sw" style="background:var(--b2)"></span>尺骨／桡骨 <span class="sw" style="background:var(--b3)"></span>腕掌骨与指骨</p>
+<label class="sm"><input checked="" id="sk" type="checkbox"/> 显示骨骼细节</label>
+<div class="visibility-controls">
+<strong>显示选项</strong>
+<div class="visibility-grid">
+<label class="sm"><input checked="" id="fe" type="checkbox"/> 显示羽毛</label>
+<label class="sm"><input checked="" id="wo" type="checkbox"/> 显示翼型外缘</label>
+<label class="sm"><input id="tr" type="checkbox"/> 显示拍动轨迹</label>
+<label class="sm"><input checked="" id="show_primaryCoverts" type="checkbox"/> 初级覆羽</label>
+<label class="sm"><input checked="" id="show_greaterCoverts" type="checkbox"/> 大覆羽</label>
+<label class="sm"><input checked="" id="show_medianCoverts" type="checkbox"/> 中覆羽</label>
+<label class="sm"><input checked="" id="show_lesserCoverts" type="checkbox"/> 小覆羽</label>
+<label class="sm"><input checked="" id="show_axillaries" type="checkbox"/> 腋羽</label>
+<label class="sm"><input checked="" id="ae" type="checkbox"/> 显示拇指和小翼羽</label>
+<label class="sm"><input checked="" id="vc" type="checkbox"/> 显示腹面覆羽</label>
+</div></div>
+</section>
+<section aria-label="参数调整" class="control-pane" id="controlPane">
+<details class="main-settings" id="motionControlPanel" open=""><summary>动作控制与运动预设</summary>
+<div class="motion-grid">
+<label for="motionScale">拍翼幅度 <span id="motionScale_v">100%</span><input id="motionScale" max="150" min="0" step="1" type="range" value="100"/></label>
+<label for="flightState">飞行状态<select aria-label="飞行状态" id="flightState"><option value="takeoff">起飞</option><option value="climb">爬升</option><option selected="" value="cruise">平飞巡航</option><option value="accelerate">加速</option><option value="decelerate">减速</option><option value="turn">转弯</option><option value="descent">下降</option><option value="landing">着陆制动</option></select></label>
+<label for="flightGait">飞行步态<select aria-label="飞行步态" id="flightGait"><option selected="" value="continuous">持续拍翼</option><option value="glide">无拍翼滑翔</option><option value="hover">蜂鸟式悬停拍翼</option></select></label>
+<label for="turnStrength">左右翼不对称强度 <span id="turnStrength_v">18°</span><input id="turnStrength" max="40" min="0" step="1" type="range" value="18"/></label>
+</div>
+<div class="motion-subpanel" id="hoverControls" style="display:none"><b>悬停周期参数</b><div class="motion-grid">
+<label for="hoverAmp">全翼拍动幅度 <span id="hoverAmp_v">107°</span><input id="hoverAmp" max="130" min="80" step="1" type="range" value="107"/></label>
+<label for="hoverDown">下拍周期占比 <span id="hoverDown_v">48%</span><input id="hoverDown" max="56" min="42" step="1" type="range" value="48"/></label>
+</div></div>
+<div aria-live="polite" class="sm" id="motionStatus">当前状态：平飞巡航；步态：持续拍翼。</div>
+</details>
+<details class="main-settings form-settings" open=""><summary>翼型预设与轮廓</summary>
+<div class="form-control">
+<label class="sm" for="wingForm">翼型预设</label>
+<select id="wingForm">
+<option value="pigeon">原始鸽翼</option>
+<option value="elliptical">椭圆翼</option>
+<option value="highspeed">尖窄高速翼</option>
+<option value="dynamic">主动／动态滑翔翼</option>
+<option value="slot">被动／升腾滑翔翼</option>
+</select>
+<div class="g3" id="formControls" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+<div class="len-actions"><button class="g" id="resetForm">恢复原始鸽翼外观</button></div>
+</div>
+</details><details class="main-settings feather-count-settings" id="featherCountSettings" open=""><summary>自定义羽毛数量</summary><div class="modifier-block" id="featherCountEditor">
+<div class="count-global-actions"><button class="g" id="allFeatherCountsPlus" type="button">所有可调羽组 +1</button><button class="g" id="allFeatherCountsMinus" type="button">所有可调羽组 −1</button><button class="g" id="resetFeatherCounts" type="button">恢复默认数量</button></div>
+<div class="feather-count-grid" id="featherCountControls"></div>
+<p aria-live="polite" class="sm" id="featherCountStatus"></p>
+</div></details><details class="main-settings" open=""><summary>羽毛外观与分组参数</summary>
+<div class="length-control" id="featherModifierPanel">
+<div class="modifier-block">
+<b>整体参数</b>
+<div class="g3" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+<label>整体羽毛长度 <span id="globalLen_v">100%</span><input id="globalLen" max="150" min="50" step="1" type="range" value="100"/></label>
+<label>整体羽片宽度 <span id="globalWidth_v">100%</span><input id="globalWidth" max="145" min="60" step="1" type="range" value="100"/></label>
+</div>
+</div>
+<div class="modifier-block" id="groupParameterBlock">
+<b>羽毛组参数</b>
+<div aria-label="选择羽毛组" class="group-picker" id="groupPicker" role="group"></div>
+
+<div class="modifier-block" id="lengthDistributionEditor">
+<b>组内长度分布</b>
+<div class="endpoint-grid">
+<div class="endpoint-card">
+<label for="lengthDistStartRange"><div class="range-title"><span>首端羽毛倍率</span><span id="lengthDistStartLabel">100%</span></div></label>
+<div class="endpoint-inputs"><input aria-label="首端羽毛倍率" id="lengthDistStartRange" max="200" min="25" step="1" type="range" value="100"/><input aria-label="首端羽毛倍率百分比" id="lengthDistStartNumber" max="200" min="25" step="1" type="number" value="100"/></div>
+</div>
+<div class="endpoint-card">
+<label for="lengthDistEndRange"><div class="range-title"><span>末端羽毛倍率</span><span id="lengthDistEndLabel">100%</span></div></label>
+<div class="endpoint-inputs"><input aria-label="末端羽毛倍率" id="lengthDistEndRange" max="200" min="25" step="1" type="range" value="100"/><input aria-label="末端羽毛倍率百分比" id="lengthDistEndNumber" max="200" min="25" step="1" type="number" value="100"/></div>
+</div>
+</div>
+<div class="length-dist-reference-panel">
+<div class="reference-panel-head"><b>中间参考点</b></div>
+<div class="length-dist-reference-points" id="lengthDistReferencePoints"></div>
+<div class="length-dist-tools"><button class="g" id="addLengthReferencePoint" type="button">＋ 添加中间参考点</button><button class="g" id="clearLengthReferencePoints" type="button">清除中间点</button></div>
+<p aria-live="polite" class="sm" id="lengthDistPointStatus">当前没有中间参考点。</p>
+</div>
+<div class="length-dist-tools"><label class="sm" for="lengthDistCurve">参考点之间的插值方式</label><select id="lengthDistCurve"><option value="linear">线性渐变</option><option value="smooth">平滑渐变</option></select><button class="g" id="resetLengthDistribution" type="button">重置本组长度分布</button></div>
+<p aria-live="polite" class="sm" id="lengthDistPreview">首端 100% → 中间 100% → 末端 100%。</p>
+</div>
+<div class="group-param-controls" id="groupParamControls"></div>
+<div class="len-actions"><button class="g" id="resetSelectedGroup">重置当前羽毛组</button></div>
+</div><div class="modifier-block">
+<b>自定义多组组合修改器</b>
+<label class="sm">名称 <input id="comboName" style="width:100%;font:inherit;background:var(--pn);color:var(--fg);border:1px solid var(--ln);border-radius:4px;padding:5px" type="text" value="自定义组合 1"/></label>
+<div class="combo-targets" id="comboTargets"></div>
+<div class="combo-create-row">
+<label class="sm">修改内容<select id="comboParam"></select></label>
+<label class="sm">数值 <span class="value-pill" id="comboValueDisplay">110%</span><input id="comboValue" step="1" style="width:100%" type="range" value="110"/></label>
+<button id="addCombo">添加修改器</button>
+</div>
+<div aria-live="polite" class="sm" id="comboHint"></div>
+<div class="combo-list" id="comboTable"></div>
+<div class="len-actions"><button class="g" id="resetCombos">清空组合修改器</button><button class="g" id="exportCombos">导出组合配置</button><button class="g" id="resetFeatherParams">重置羽毛修改器</button></div>
+<div class="modifier-block" id="parameterBridge">
+<b>Blender 参数接口</b>
+<button class="g" id="exportBlenderParameters" type="button">导出完整参数 JSON</button>
+<span aria-live="polite" class="sm" id="parameterExportStatus"></span>
+</div>
+</div>
+</div>
+</details>
+
+</section>
+</div>
+<details class="advanced-shell" id="advancedDetails">
+<summary>低频使用参数与模型说明</summary>
+<details><summary>折叠与羽毛局部参数</summary>
+<div class="rare-motion-grid">
+<label>折叠度 <span id="fo_v">0</span>%<input id="fo" max="100" min="0" step="1" type="range" value="0"/></label>
+<label>指角偏移 <span id="fi_v">0</span>°<input id="fi" max="15" min="-15" step="1" type="range" value="0"/></label>
+<label>瓣膜开度 <span id="va_v">25</span>°<input id="va" max="45" min="0" step="1" type="range" value="25"/></label>
+<label>覆瓦倾角 <span id="im_v">6</span>°<input id="im" max="15" min="0" step="1" type="range" value="6"/></label>
+<label>小翼羽张开 <span id="al_v">15</span>°<input id="al" max="40" min="0" step="1" type="range" value="15"/></label>
+</div>
+</details>
+<details id="secondaryReferenceDetails"><summary>绿色次级飞羽参考跟随</summary>
+<label class="sm"><input id="secondaryFollowYellowReference" type="checkbox"/> 绿色次级飞羽跟随黄色飞羽的偏转参考</label>
+</details>
+<details><summary>骨骼尺寸与比例</summary>
+<div class="form-control">
+<div class="g3" id="boneControls" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+<div class="bar" id="lp" style="flex-wrap:wrap"></div>
+<div class="sm" id="morphStats" style="margin:6px 0 8px"></div>
+</div>
+</details>
+<details><summary>单根飞羽基础参数</summary>
+<div class="modifier-block">
+<div class="len-actions"><button class="g" id="resetLen">恢复单根飞羽基础值</button></div>
+<div class="table-scroll"><table id="flEdit"></table></div>
+</div>
+</details>
+<details><summary>关节驱动参数</summary><div id="jp"></div></details>
+<details><summary>数据来源</summary>
+<ol class="sm" style="margin:6px 0;padding-left:2em">
+<li>CHANG E, MATLOFF L Y, STOWERS A K, et al. Soft biohybrid morphing wings with feathers underactuated by wrist and finger motion[J]. Science Robotics, 2020, 5(38): eaay1246. DOI: <a href="https://doi.org/10.1126/scirobotics.aay1246" rel="noreferrer" target="_blank">10.1126/scirobotics.aay1246</a>.</li>
+<li>BACHMANN T, KLÄN S, BAUMGARTNER W, et al. Morphometric characterisation of wing feathers of the barn owl Tyto alba pratincola and the pigeon Columba livia[J]. Frontiers in Zoology, 2007, 4: 23. DOI: <a href="https://doi.org/10.1186/1742-9994-4-23" rel="noreferrer" target="_blank">10.1186/1742-9994-4-23</a>.</li>
+<li>LEE S I, KIM J, PARK H, et al. The function of the alula in avian flight[J]. Scientific Reports, 2015, 5: 9914. DOI: <a href="https://doi.org/10.1038/srep09914" rel="noreferrer" target="_blank">10.1038/srep09914</a>.</li>
+<li>HIERONYMUS T L. Qualitative skeletal correlates of wing shape in extant birds (Aves: Neoaves)[J]. BMC Evolutionary Biology, 2015, 15: 30. DOI: <a href="https://doi.org/10.1186/s12862-015-0303-7" rel="noreferrer" target="_blank">10.1186/s12862-015-0303-7</a>.</li>
+<li>AGRAWAL S, TOBALSKE B W, ANWAR Z, et al. Musculoskeletal wing-actuation model of hummingbirds predicts diverse effects of primary flight muscles in hovering flight[J]. Proceedings of the Royal Society B: Biological Sciences, 2022, 289(1988): 20222076. DOI: <a href="https://doi.org/10.1098/rspb.2022.2076" rel="noreferrer" target="_blank">10.1098/rspb.2022.2076</a>.</li>
+<li>MAEDA M, NAKATA T, KITAMURA I, et al. Quantifying the dynamic wing morphing of hovering hummingbird[J]. Royal Society Open Science, 2017, 4(9): 170307. DOI: <a href="https://doi.org/10.1098/rsos.170307" rel="noreferrer" target="_blank">10.1098/rsos.170307</a>.</li>
+<li>KLAASSEN VAN OORSCHOT B, TANG H K, TOBALSKE B W. Phylogenetics and ecomorphology of emarginate primary feathers[J]. Journal of Morphology, 2017, 278(7): 936-947. DOI: <a href="https://doi.org/10.1002/jmor.20686" rel="noreferrer" target="_blank">10.1002/jmor.20686</a>.</li>
+</ol>
+</details>
+</details>
+</main>
+<script>
+const d=Math.PI/180,TP=2*Math.PI;
+const J=[['肩 偏航',0,25,0],['肩 滚转',0,60,0],['肩 俯仰',0,0,0],['肘 屈伸',70,15,0],['腕 偏航',30,15,0],['腕 滚转',-35,27,0.3],['腕 长轴旋转',0,0,0]];
+const LIM=[[-120,60],[-60,60],[-60,60],[0,150],[-30,90],[-90,45],[-45,45]];
+let Q=J.map(j=>({m:j[1],a:j[2],p:j[3]})),L=[48.3,60,38,15];
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+let W=0,H=0,sc=1,az=75*d,el=18*d,t=0,play=false,drag=null;
+const c_=Math.cos,s_=Math.sin;
+const M=(a,b)=>a.map(r=>[0,1,2].map(j=>r[0]*b[0][j]+r[1]*b[1][j]+r[2]*b[2][j]));
+const V=(m,v)=>m.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]);
+const Rz=a=>[[c_(a),-s_(a),0],[s_(a),c_(a),0],[0,0,1]];
+const Rx=a=>[[1,0,0],[0,c_(a),-s_(a)],[0,s_(a),c_(a)]];
+const Ry=a=>[[c_(a),0,s_(a)],[0,1,0],[-s_(a),0,c_(a)]];
+let FO=0,FI=0,VA=25,IM=6,SHOWF=true,SHOWO=true,SHOWT=false,SHOWA=true,SHOWV=true,SHOWS=true,AL=15;
+let SECONDARY_FOLLOW_YELLOW_REFERENCE=false; // Optional: interpolate secondary-feather vane deflection from P1 and T1.
+const lerp=(a,b,s)=>a+(b-a)*s;
+// Motion presets migrated from the compact model. The amplitude control scales cyclic motion without overwriting joint base amplitudes.
+let FLIGHT_STATE='cruise', FLIGHT_GAIT='continuous', MOTION_SCALE=1, TURN_STRENGTH=18, HOVER_AMP=107, HOVER_DOWN=.48;
+const ang=t=>{
+  const k=1-0.85*FO, phase=((t%1)+1)%1;
+  let envelope=1, fold=FO;
+  if(FLIGHT_GAIT==='glide') envelope=0;
+  const a=Q.map((q,i)=>q.m+q.a*k*MOTION_SCALE*envelope*c_(TP*(t-q.p)));
+  if(FLIGHT_GAIT==='glide'){
+    // Glide holds a steady pose. If the wrist axial mean is used to set a wing-surface
+    // flip, transfer that static flip to the shoulder axial joint so the forearm frame
+    // (Re, used by green secondary feathers) shares it with the hand-wing frame (Rw).
+    // Neutralize the wrist axial component here to avoid applying the same flip twice.
+    a[2]=Q[2].m+Q[6].m;
+    a[6]=0;
+  }
+  if(FLIGHT_STATE==='takeoff'){a[1]+=8*envelope;a[3]-=5*envelope;}
+  else if(FLIGHT_STATE==='climb'){a[1]+=5*envelope;a[0]-=4*envelope;}
+  else if(FLIGHT_STATE==='accelerate'){a[0]-=5*envelope;a[4]-=3*envelope;}
+  else if(FLIGHT_STATE==='decelerate'){a[1]-=4*envelope;a[3]+=5*envelope;}
+  else if(FLIGHT_STATE==='turn'){a[0]+=TURN_STRENGTH*envelope*.25;}
+  else if(FLIGHT_STATE==='descent'){a[1]-=5*envelope;}
+  else if(FLIGHT_STATE==='landing'){a[1]+=8*envelope;a[3]+=12*envelope;fold=Math.max(fold,.25);}
+  if(FLIGHT_GAIT==='hover'){
+    const wave=phase<HOVER_DOWN
+      ? Math.cos(Math.PI*phase/Math.max(HOVER_DOWN,1e-4))
+      : -Math.cos(Math.PI*(phase-HOVER_DOWN)/Math.max(1-HOVER_DOWN,1e-4));
+    a[1]=Q[1].m+(HOVER_AMP/2)*MOTION_SCALE*wave;
+    // Hover wing-axis reversal: drive the shoulder's axial rotation so the forearm
+    // reference frame (Re, used by green secondaries) and hand-wing frame (Rw)
+    // share the same overall flip. Keep wrist axial rotation as a local offset only;
+    // do not add the same large periodic flip again at the wrist.
+    a[2]=Q[2].m+(HOVER_AMP*.22)*MOTION_SCALE*Math.sin(TP*phase);
+    a[6]=Q[6].m;
+  }
+  a[3]=lerp(a[3],145,fold);a[4]=lerp(a[4],90,fold);
+  return a;
+};
+const add=(a,b)=>a.map((v,i)=>v+b[i]),sub=(a,b)=>a.map((v,i)=>v-b[i]),mul=(a,k)=>a.map(v=>v*k);
+const dt=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const nrm=a=>{const l=Math.hypot(...a)||1;return a.map(v=>v/l);};
+const rot=(v,k,a)=>{const c=c_(a),s=s_(a),kv=crs(k,v),kd=dt(k,v);return v.map((x,i)=>x*c+kv[i]*s+k[i]*kd*(1-c));};
+// [A,B,c,来源] 基础角度传递系数按原始 S/P 羽毛剖面保存；数量改变时按归一化位置重采样，避免新增羽毛全部复用末端角度。
+const CO_ORIGINAL=[[.78,-.10,-22,'插值'],[.68,-.08,-12,'读图'],[.42,-.15,18,'插值'],[.20,-.20,41,'读图'],[.18,-.32,43,'插值'],[.17,-.43,44,'读图'],[.14,-.44,40,'插值'],[.12,-.45,34.6,'读图'],[.13,-.45,32.7,'插值'],[.15,-.40,31,'读图'],
+[.87,-.15,-31,'读图'],[.95,-.10,-34,'插值'],[1.0,-.05,-36,'读图'],[1.05,-.18,-36,'插值'],[1.09,-.30,-33.8,'读图'],[1.13,-.35,-32,'插值'],[1.16,-.40,-29.8,'读图'],[1.13,-.55,-22,'插值'],[1.07,-.70,-12.6,'读图'],[1.05,-.80,-3,'外推']];
+const ORIGINAL_FL_LENGTHS=[118,115,112,110,108,105,100,95,88,80,112,118,125,135,150,165,180,193,200,193,72,66,60];
+const ORIGINAL_FW_LENGTHS=[26,27,27,27,27,26,25,24,22,20,24,24,23,22,21,20,19,18,18,18,22,22,22];
+const DEFAULT_FEATHER_COUNTS={secondaries:10,primaries:10,tertials:3,medianCoverts:10,palmMedianCoverts:6,lesserCoverts:9,axillaries:3,alula:3};
+let FEATHER_COUNTS={...DEFAULT_FEATHER_COUNTS};
+const FLIGHT_GROUP_ORDER=['secondaries','primaries','tertials'];
+const FLIGHT_LABEL_PREFIX={secondaries:'S',primaries:'P',tertials:'T'};
+function flightGroupStart(group){return group==='secondaries'?0:group==='primaries'?FEATHER_COUNTS.secondaries:FEATHER_COUNTS.secondaries+FEATHER_COUNTS.primaries;}
+function flightGroupCount(group){return FEATHER_COUNTS[group]||0;}
+function flightGroupForIndex(i){return i<FEATHER_COUNTS.secondaries?'secondaries':i<FEATHER_COUNTS.secondaries+FEATHER_COUNTS.primaries?'primaries':'tertials';}
+function flightLocalIndex(i){const group=flightGroupForIndex(i);return i-flightGroupStart(group);}
+function flightIndex(group,local){return flightGroupStart(group)+local;}
+function flightLabel(group,local){return `${FLIGHT_LABEL_PREFIX[group]}${local+1}`;}
+function FN(i){const group=flightGroupForIndex(i);return flightLabel(group,flightLocalIndex(i));}
+function flightDistributionU(i){const group=flightGroupForIndex(i),local=flightLocalIndex(i),n=flightGroupCount(group);return n<=1?0:local/(n-1);}
+function flightAngleAtU(group,u,th){
+ const n=flightGroupCount(group),start=flightGroupStart(group);
+ if(n<=1)return th[start]||0;
+ const x=clamp(Number(u)||0,0,1)*(n-1),lo=Math.floor(x),hi=Math.min(n-1,lo+1),f=x-lo;
+ return lerp(th[start+lo]||0,th[start+hi]||0,f);
+}
+function secondarySlotIndex(i,n=FEATHER_COUNTS.secondaries){const gapSlot=clamp(Math.round((n+1)*.4),1,Math.max(1,n-1));return i<gapSlot?i:i+1;}
+let CO=CO_ORIGINAL.slice();
+let FL_BASE=ORIGINAL_FL_LENGTHS.slice();
+let FL=FL_BASE.slice(); // 单根基础长度，单位 mm；修改器不覆盖此基础值
+let FW_BASE=ORIGINAL_FW_LENGTHS.slice();
+let FW=FW_BASE.slice(); // 单根基础宽度，单位 mm
+let FEATHER_ANGLE_OFFSETS=Array(23).fill(0); // 单根羽轴基础角度偏移（°）
+let FEATHER_ROOT_OFFSETS=Array(23).fill(0); // 单根羽根沿所属骨段的偏移（mm）
+const GROUP_DEFS=[
+ {id:'primaries',label:'初级飞羽',short:'P1–P10',kind:'flight'},
+ {id:'secondaries',label:'次级飞羽',short:'S1–S10',kind:'flight'},
+ {id:'tertials',label:'三级飞羽',short:'T1–T3',kind:'flight'},
+ {id:'primaryCoverts',label:'初级覆羽',short:'对应初级飞羽',kind:'covert'},
+ {id:'greaterCoverts',label:'大覆羽',short:'对应次级飞羽及三级飞羽对应覆羽',kind:'covert'},
+ {id:'medianCoverts',label:'中覆羽',short:'含掌区中覆羽',kind:'covert'},
+ {id:'lesserCoverts',label:'小覆羽',short:'含原模型缘覆羽子排',kind:'covert'},
+ {id:'axillaries',label:'腋羽',short:'3 根；原模型单独构建',kind:'aux'},
+ {id:'alula',label:'小翼羽',short:'3 根；拇指支撑另算',kind:'aux'}
+];
+const GROUP_BY_ID=Object.fromEntries(GROUP_DEFS.map(g=>[g.id,g]));
+const FLIGHT_PROFILES={
+ secondaries:{length:ORIGINAL_FL_LENGTHS.slice(0,10),width:ORIGINAL_FW_LENGTHS.slice(0,10),co:CO_ORIGINAL.slice(0,10)},
+ primaries:{length:ORIGINAL_FL_LENGTHS.slice(10,20),width:ORIGINAL_FW_LENGTHS.slice(10,20),co:CO_ORIGINAL.slice(10,20)},
+ tertials:{length:ORIGINAL_FL_LENGTHS.slice(20,23),width:ORIGINAL_FW_LENGTHS.slice(20,23),co:[]}
+};
+const COUNT_LIMITS={secondaries:[2,20],primaries:[2,20],tertials:[1,12],medianCoverts:[2,24],palmMedianCoverts:[1,16],lesserCoverts:[2,24],axillaries:[0,12],alula:[0,12]};
+const COUNT_LABELS={secondaries:'次级飞羽数量',primaries:'初级飞羽数量',tertials:'三级飞羽数量',medianCoverts:'中覆羽数量',palmMedianCoverts:'手翼中覆羽数量',lesserCoverts:'小覆羽 / 缘覆羽每排数量',axillaries:'腋羽数量',alula:'小翼羽数量'};
+function extrapolateProfile(values,index,minValue=0,maxValue=400){
+ if(index<values.length)return values[index];
+ if(!values.length)return minValue;
+ const last=values[values.length-1],prev=values.length>1?values[values.length-2]:last;
+ return clamp(last+(last-prev)*(index-values.length+1),minValue,maxValue);
+}
+function baseFlightValue(group,field,local){
+ const p=FLIGHT_PROFILES[group];
+ if(field==='co'){
+  if(!p.co.length)return null;
+  const targetCount=Math.max(1,flightGroupCount(group));
+  if(targetCount===p.co.length)return p.co[Math.min(local,p.co.length-1)].slice();
+  // Treat the original coefficients as a profile along the feather row. When the
+  // row count changes, sample that profile at the new normalized feather position.
+  // This avoids cloning the last feather's exact angle onto every added feather.
+  const u=targetCount<=1?0:local/(targetCount-1),x=clamp(u,0,1)*(p.co.length-1);
+  const i0=Math.floor(x),i1=Math.min(p.co.length-1,i0+1),f=x-i0,a=p.co[i0],b=p.co[i1];
+  return [lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f),`按数量重采样`];
+ }
+ const vals=p[field];
+ const min=field==='length'?12:field==='width'?5:0;
+ return extrapolateProfile(vals,local,min,field==='length'?260:80);
+}
+function captureFlightDataByName(){
+ const map={};
+ for(let i=0;i<FL.length;i++){
+  const group=flightGroupForIndex(i),local=flightLocalIndex(i),name=flightLabel(group,local);
+  map[name]={baseLength:FL_BASE[i],length:FL[i],baseWidth:FW_BASE[i],width:FW[i],angle:FEATHER_ANGLE_OFFSETS[i],root:FEATHER_ROOT_OFFSETS[i],co:group==='tertials'?null:(CO[i]?.slice()||baseFlightValue(group,'co',local))};
+ }
+ return map;
+}
+function rebuildFlightData(oldMap=null,restoreDefaults=false){
+ const nextBase=[],nextLength=[],nextWidthBase=[],nextWidth=[],nextAngle=[],nextRoot=[],nextCO=[];
+ for(const group of FLIGHT_GROUP_ORDER){
+  const n=FEATHER_COUNTS[group];
+  for(let local=0;local<n;local++){
+   const name=flightLabel(group,local),old=oldMap?.[name];
+   let baseLength,baseWidth,length,width,angle,root,co;
+   if(restoreDefaults){baseLength=baseFlightValue(group,'length',local);baseWidth=baseFlightValue(group,'width',local);length=baseLength;width=baseWidth;angle=0;root=0;co=baseFlightValue(group,'co',local);}
+   else if(old){baseLength=old.baseLength;length=old.length;baseWidth=old.baseWidth;width=old.width;angle=old.angle;root=old.root;co=baseFlightValue(group,'co',local);}
+   else{
+    baseLength=baseFlightValue(group,'length',local);baseWidth=baseFlightValue(group,'width',local);length=baseLength;width=baseWidth;angle=0;root=0;co=baseFlightValue(group,'co',local);
+   }
+   nextBase.push(baseLength);nextLength.push(length);nextWidthBase.push(baseWidth);nextWidth.push(width);nextAngle.push(angle);nextRoot.push(root);
+   if(group!=='tertials')nextCO.push(co||baseFlightValue(group,'co',local));
+  }
+ }
+ FL_BASE=nextBase;FL=nextLength;FW_BASE=nextWidthBase;FW=nextWidth;FEATHER_ANGLE_OFFSETS=nextAngle;FEATHER_ROOT_OFFSETS=nextRoot;CO=nextCO;
+}
+function dynamicGroupShort(groupId){
+ if(groupId==='primaries')return `P1–P${FEATHER_COUNTS.primaries}`;
+ if(groupId==='secondaries')return `S1–S${FEATHER_COUNTS.secondaries}`;
+ if(groupId==='tertials')return `T1–T${FEATHER_COUNTS.tertials}`;
+ if(groupId==='primaryCoverts')return `对应 ${FEATHER_COUNTS.primaries} 根初级飞羽`;
+ if(groupId==='greaterCoverts')return `对应 ${FEATHER_COUNTS.secondaries+FEATHER_COUNTS.tertials} 根次级／三级飞羽`;
+ if(groupId==='medianCoverts')return `主排 ${FEATHER_COUNTS.medianCoverts} 根＋掌区 ${FEATHER_COUNTS.palmMedianCoverts} 根`;
+ if(groupId==='lesserCoverts')return `小覆羽与缘覆羽各 ${FEATHER_COUNTS.lesserCoverts} 根／侧`;
+ if(groupId==='axillaries')return `${FEATHER_COUNTS.axillaries} 根；模型扩展组`;
+ if(groupId==='alula')return `${FEATHER_COUNTS.alula} 根；拇指支撑另算`;
+ return GROUP_BY_ID[groupId]?.short||'';
+}
+function renderFeatherCountControls(){
+ const root=document.getElementById('featherCountControls');if(!root)return;
+ const rows=[
+  ...['primaries','secondaries','tertials'].map(key=>({key,label:COUNT_LABELS[key],value:FEATHER_COUNTS[key],linked:false})),
+  {key:'primaryCoverts',label:'初级覆羽数量',value:FEATHER_COUNTS.primaries,linked:true},
+  {key:'greaterCoverts',label:'大覆羽数量',value:FEATHER_COUNTS.secondaries+FEATHER_COUNTS.tertials,linked:true},
+  ...['medianCoverts','palmMedianCoverts','lesserCoverts','axillaries','alula'].map(key=>({key,label:COUNT_LABELS[key],value:FEATHER_COUNTS[key],linked:false}))
+ ];
+ root.innerHTML=rows.map(r=>{
+  const lim=COUNT_LIMITS[r.key]||[0,30];
+  if(r.linked)return `<div class="feather-count-card is-linked"><div class="count-head"><span>${r.label}</span><span class="value-pill">${r.value}</span></div></div>`;
+  return `<div class="feather-count-card"><div class="count-head"><label for="count_${r.key}">${r.label}</label><span class="value-pill" id="count_${r.key}_label">${r.value}</span></div><div class="count-number-row"><button type="button" class="g" data-count-delta="-1" data-count-key="${r.key}" aria-label="减少${r.label}">−</button><input id="count_${r.key}" type="number" min="${lim[0]}" max="${lim[1]}" step="1" value="${r.value}" data-count-input="${r.key}" aria-label="${r.label}"><button type="button" class="g" data-count-delta="1" data-count-key="${r.key}" aria-label="增加${r.label}">+</button><button type="button" class="g" data-count-reset="${r.key}">默认</button></div></div>`;
+ }).join('');
+ root.querySelectorAll('[data-count-input]').forEach(input=>input.addEventListener('change',()=>setFeatherCount(input.dataset.countInput,input.value)));
+ root.querySelectorAll('[data-count-delta]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.countKey;setFeatherCount(key,FEATHER_COUNTS[key]+Number(button.dataset.countDelta));}));
+ root.querySelectorAll('[data-count-reset]').forEach(button=>button.addEventListener('click',()=>setFeatherCount(button.dataset.countReset,DEFAULT_FEATHER_COUNTS[button.dataset.countReset])));
+ const total=FEATHER_COUNTS.secondaries+FEATHER_COUNTS.primaries+FEATHER_COUNTS.tertials;
+ document.getElementById('featherCountStatus').textContent=`当前主要飞羽 ${total} 根`;
+}
+function afterFeatherCountChanged(){
+ renderFeatherCountControls();renderGroupParams();renderCoefficientTable();renderBaseFeatherTable();updateEffectiveLengths();requestRender();
+}
+function setFeatherCount(key,raw){
+ const limits=COUNT_LIMITS[key];if(!limits)return;
+ const n=clamp(Math.round(Number(raw)||0),limits[0],limits[1]);if(n===FEATHER_COUNTS[key]){renderFeatherCountControls();return;}
+ const oldMap=captureFlightDataByName();FEATHER_COUNTS[key]=n;rebuildFlightData(oldMap,false);
+ afterFeatherCountChanged();
+}
+function changeAllFeatherCounts(delta){
+ const oldMap=captureFlightDataByName();
+ for(const key of Object.keys(COUNT_LIMITS))FEATHER_COUNTS[key]=clamp(FEATHER_COUNTS[key]+delta,COUNT_LIMITS[key][0],COUNT_LIMITS[key][1]);
+ rebuildFlightData(oldMap,false);afterFeatherCountChanged();
+}
+function resetAllFeatherCounts(){
+ FEATHER_COUNTS={...DEFAULT_FEATHER_COUNTS};rebuildFlightData(null,true);afterFeatherCountChanged();
+}
+document.getElementById('allFeatherCountsPlus').addEventListener('click',()=>changeAllFeatherCounts(1));
+document.getElementById('allFeatherCountsMinus').addEventListener('click',()=>changeAllFeatherCounts(-1));
+document.getElementById('resetFeatherCounts').addEventListener('click',resetAllFeatherCounts);
+const GROUP_PARAMS=Object.fromEntries(GROUP_DEFS.map(g=>[g.id,{lengthScale:1,widthScale:1,chordScale:1,sweepOffset:0,chordDistOffset:0,rootDistOffset:0,fanOffset:0,roundnessOffset:0,gapOffset:0,tipLiftOffset:0}]));
+const LENGTH_DISTRIBUTIONS=Object.fromEntries(GROUP_DEFS.map(g=>[g.id,{start:100,end:100,curve:'linear',points:[]} ]));
+function lengthDistributionValue(groupId,u){
+ const d=LENGTH_DISTRIBUTIONS[groupId];if(!d)return 100;
+ const pos=clamp(Number(u)||0,0,1)*100;
+ const points=Array.isArray(d.points)?d.points:[];
+ const knots=[{position:0,value:Number(d.start)||100},...points.map(p=>({position:clamp(Number(p.position)||0,1,99),value:clamp(Number(p.value)||100,25,200)})),{position:100,value:Number(d.end)||100}].sort((a,b)=>a.position-b.position);
+ let left=knots[0],right=knots[knots.length-1];
+ for(let i=0;i<knots.length-1;i++){if(pos<=knots[i+1].position){left=knots[i];right=knots[i+1];break;}}
+ const span=Math.max(1e-6,right.position-left.position);
+ let t=clamp((pos-left.position)/span,0,1);
+ if(d.curve==='smooth')t=t*t*(3-2*t);
+ return left.value+(right.value-left.value)*t;
+}
+function lengthDistributionFactor(groupId,u){return lengthDistributionValue(groupId,u)/100;}
+let GLOBAL_LENGTH_SCALE=1;
+let COMBO_MODIFIERS=[];
+let nextComboId=1;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function comboMultiplier(groups,param){let out=1;for(const mod of COMBO_MODIFIERS){if(mod.param===param&&mod.targets.some(g=>groups.includes(g)))out*=Number(mod.value)/100;}return out;}
+function comboOffset(groups,param){let out=0;for(const mod of COMBO_MODIFIERS){if(mod.param===param&&mod.targets.some(g=>groups.includes(g)))out+=Number(mod.value);}return out;}
+function scaleForGroups(groups,param,includeGlobal=true){const unique=[...new Set(groups)];let out=1;if(param==='length'&&includeGlobal)out*=GLOBAL_LENGTH_SCALE;const key=param==='length'?'lengthScale':param==='width'?'widthScale':'chordScale';for(const id of unique)out*=GROUP_PARAMS[id]?.[key]??1;out*=comboMultiplier(unique,`${param}Scale`);return out;}
+function addForGroups(groups,param){const unique=[...new Set(groups)];let out=0;const key={sweepOffset:'sweepOffset',chordDistOffset:'chordDistOffset',rootDistOffset:'rootDistOffset',fanOffset:'fanOffset',roundnessOffset:'roundnessOffset',gapOffset:'gapOffset',tipLiftOffset:'tipLiftOffset'}[param];for(const id of unique)out+=GROUP_PARAMS[id]?.[key]??0;out+=comboOffset(unique,param);return out;}
+const effFL=i=>FL[i]*scaleForGroups([flightGroupForIndex(i)],'length',true);
+const LF=i=>{const group=flightGroupForIndex(i),local=flightLocalIndex(i),n=flightGroupCount(group);if(group==='tertials')return .47;if(group==='secondaries')return .40+.06*Math.min(local,7)/7+(local>7?.01*(local-7):0);return .385-.19*(n<=1?0:local/(n-1));};
+// 形态参数层。比例预设是可编辑的设计初值，不作为某物种的实测值。
+const FORM={span:1,chord:1,width:1,sweep:0,fan:0,roundness:50,gap:0,tipLift:0,chordDist:50,boneH:1,boneF:1,boneHand:1,handDigits:.28,primaryAttach:.50};
+const FORM_PRESETS={
+  pigeon:{label:'原始鸽翼',values:{span:100,chord:100,width:100,sweep:0,fan:0,roundness:50,gap:0,tipLift:0,chordDist:50,boneH:100,boneF:100,boneHand:100,handDigits:28,primaryAttach:50},motion:{shoulderAxial:0,wristAxial:0}},
+  elliptical:{label:'椭圆翼',values:{span:92,chord:114,width:124,sweep:-1,fan:1,roundness:90,gap:0,tipLift:0,chordDist:82,boneH:104,boneF:100,boneHand:86,handDigits:23,primaryAttach:20},motion:{shoulderAxial:2,wristAxial:1}},
+  highspeed:{label:'尖窄高速翼',values:{span:112,chord:84,width:70,sweep:18,fan:1,roundness:8,gap:0,tipLift:0,chordDist:24,boneH:100,boneF:89,boneHand:165,handDigits:44,primaryAttach:92},motion:{shoulderAxial:3,wristAxial:5}},
+  dynamic:{label:'长窄滑翔翼',values:{span:130,chord:84,width:72,sweep:0,fan:2,roundness:18,gap:0,tipLift:3,chordDist:15,boneH:92,boneF:122,boneHand:132,handDigits:38,primaryAttach:90},motion:{shoulderAxial:5,wristAxial:10}},
+  slot:{label:'升腾滑翔翼',values:{span:116,chord:102,width:102,sweep:0,fan:9,roundness:18,gap:72,tipLift:8,chordDist:58,boneH:98,boneF:112,boneHand:110,handDigits:31,primaryAttach:82},motion:{shoulderAxial:2,wristAxial:4}}
+};
+let FORM_KIND='pigeon';
+const jointControlRefs=[];
+const BONE_CONTROLS=[
+  ['span','骨骼链总长比例','%',65,140,1,100,'ratio'],
+  ['boneH','肱骨相对比例','%',70,135,1,100,'ratio'],
+  ['boneF','前臂骨相对比例','%',70,140,1,100,'ratio'],
+  ['boneHand','手翼骨相对比例','%',70,180,1,100,'ratio'],
+  ['handDigits','指骨占手翼末端比例','%',15,45,1,28,'ratio']
+];
+const FORM_CONTROLS=[
+  ['chord','翼面纵深比例','%',60,135,1,100,'ratio'],
+  ['sweep','羽轴后掠偏移','°',-12,20,1,0,'number'],
+  ['fan','初级飞羽扇开','°',0,12,1,0,'number'],
+  ['roundness','翼尖圆钝度','%',0,100,1,50,'number'],
+  ['gap','初级飞羽分指强度','%',0,100,1,0,'number'],
+  ['tipLift','翼尖离面高度','mm',0,16,1,0,'number'],
+  ['chordDist','弦长分布','%',0,100,1,50,'number'],
+  ['primaryAttach','初级飞羽附着分布','%',0,100,1,50,'ratio']
+];
+const ratioKeys=new Set(['span','chord','width','boneH','boneF','boneHand','handDigits','primaryAttach']);
+function renderParameterControls(defs,rootId,prefix){
+  const root=document.getElementById(rootId);
+  defs.forEach(([key,label,unit,min,max,step,def])=>{
+    const wrap=document.createElement('label');
+    wrap.innerHTML=`${label} <span id="${prefix}_${key}_v">${def}${unit}</span><input id="${prefix}_${key}" type="range" min="${min}" max="${max}" step="${step}" value="${def}" aria-label="${label}">`;
+    root.appendChild(wrap);
+    const input=wrap.querySelector('input');
+    input.addEventListener('input',()=>{
+      const target=prefix==='form'?FORM:FORM;
+      target[key]=ratioKeys.has(key)?Number(input.value)/100:Number(input.value);
+      document.getElementById(`${prefix}_${key}_v`).textContent=input.value+unit;
+      if(['span','boneH','boneF','boneHand','handDigits','primaryAttach'].includes(key)){ST=stats();size();updateMorphStats();}
+      if(key==='chord'||key==='chordDist'||key==='primaryAttach'||key==='fan'||key==='roundness'||key==='gap'||key==='tipLift'||key==='sweep')updateEffectiveLengths();
+    });
+  });
+}
+renderParameterControls(BONE_CONTROLS,'boneControls','bone');
+renderParameterControls(FORM_CONTROLS,'formControls','form');
+// Overall feather width is the same baseline width value used by shape presets.
+const globalWidthInput=document.getElementById('globalWidth');
+const globalWidthLabel=document.getElementById('globalWidth_v');
+globalWidthInput.addEventListener('input',()=>{FORM.width=Number(globalWidthInput.value)/100;globalWidthLabel.textContent=globalWidthInput.value+'%';updateEffectiveLengths();});
+const globalLenInput=document.getElementById('globalLen');
+const globalLenLabel=document.getElementById('globalLen_v');
+globalLenInput.addEventListener('input',()=>{GLOBAL_LENGTH_SCALE=Number(globalLenInput.value)/100;globalLenLabel.textContent=globalLenInput.value+'%';updateEffectiveLengths();});
+function applyFormPreset(kind){
+  FORM_KIND=FORM_PRESETS[kind]?kind:'pigeon';
+  document.getElementById('wingForm').value=FORM_KIND;
+  const vals=FORM_PRESETS[FORM_KIND].values;
+  for(const [key,,unit,,,,,] of [...BONE_CONTROLS,...FORM_CONTROLS]){
+    const val=vals[key],prefix=BONE_CONTROLS.some(c=>c[0]===key)?'bone':'form';
+    const input=document.getElementById(`${prefix}_${key}`);
+    if(input){input.value=val;FORM[key]=ratioKeys.has(key)?val/100:val;document.getElementById(`${prefix}_${key}_v`).textContent=val+unit;}
+  }
+  FORM.width=vals.width/100;
+  globalWidthInput.value=String(vals.width);globalWidthLabel.textContent=vals.width+'%';
+  const motion=FORM_PRESETS[FORM_KIND].motion||{shoulderAxial:0,wristAxial:0};
+  [[2,motion.shoulderAxial],[6,motion.wristAxial]].forEach(([idx,amp])=>{Q[idx].a=amp;const ref=jointControlRefs[idx];if(ref){ref.amp.value=amp;ref.ampLabel.textContent=amp;}});
+  ST=stats();size();updateMorphStats();updateEffectiveLengths();
+}
+document.getElementById('wingForm').addEventListener('change',e=>applyFormPreset(e.target.value));
+document.getElementById('resetForm').addEventListener('click',()=>applyFormPreset('pigeon'));
+function effectiveBoneLengths(){
+  // Keep the total length fixed by the global scale while changing proportions among the three segments.
+  const raw=[L[0]*FORM.boneH,L[1]*FORM.boneF,L[2]*FORM.boneHand];
+  const base=L[0]+L[1]+L[2],sum=raw.reduce((a,b)=>a+b,0)||1;
+  const norm=base/sum*FORM.span;
+  return raw.map(v=>v*norm);
+}
+function updateMorphStats(){
+  const b=effectiveBoneLengths(),total=b.reduce((a,v)=>a+v,0)||1;
+  const e=document.getElementById('morphStats');
+  if(e)e.textContent=`当前骨链：肱骨 ${b[0].toFixed(1)} mm · 前臂 ${b[1].toFixed(1)} mm · 手翼 ${b[2].toFixed(1)} mm · 总长 ${total.toFixed(1)} mm`;
+}
+function handJointPoint(k){return add(k[2],mul(sub(k[3],k[2]),1-FORM.handDigits));}
+function rootDistributionValue(groupId){
+  if(groupId==='primaries')return clamp(FORM.primaryAttach*100+addForGroups([groupId],'rootDistOffset'),0,100);
+  return clamp(50+addForGroups([groupId],'rootDistOffset'),0,100);
+}
+function distortRootU(u,groupId){
+  const v=rootDistributionValue(groupId),factor=.65+(v/100)*.7; // 50 为中性；低值收拢，高值拉开
+  return clamp(.5+(u-.5)*factor,0,1);
+}
+function primaryRootU(localIndex){
+  const n=FEATHER_COUNTS.primaries,u=n<=1?0:localIndex/(n-1),dist=rootDistributionValue('primaries')/100;
+  const start=lerp(.15,.08,dist),end=lerp(.82,.98,dist),power=lerp(.78,1.18,dist);
+  return distortRootU(start+(end-start)*Math.pow(u,power),'primaries');
+}
+function chordDistFor(groups){return clamp(FORM.chordDist+addForGroups(groups,'chordDistOffset'),0,100);}
+function formLengthFactor(i,linkedGroups=null){
+  const group=flightGroupForIndex(i),groups=linkedGroups||[group],u=flightDistributionU(i),kind=FORM_KIND;
+  const cd=chordDistFor(groups);let f=1;
+  if(group==='secondaries'){
+    if(kind==='elliptical')f=.98+.08*Math.sin(Math.PI*u);
+    else if(kind==='highspeed')f=1.02-.07*u;
+    else if(kind==='dynamic')f=.97+.06*u;
+    else if(kind==='slot')f=.98+.03*u;
+    f*=1+((cd-50)/50)*.12*Math.sin(Math.PI*u);
+  }else if(group==='primaries'){
+    if(kind==='elliptical')f=.94+.12*Math.sin(Math.PI*u);
+    else if(kind==='highspeed')f=.88+.25*u;
+    else if(kind==='dynamic')f=.94+.15*u;
+    else if(kind==='slot')f=.92+.25*u;
+    const rnd=clamp(FORM.roundness+addForGroups(groups,'roundnessOffset'),0,100),edge=Math.max(0,Math.min(1,(u-.55)/.45));
+    f*=1+((50-rnd)/50)*.14*Math.pow(edge,1.6);
+    f*=1-((cd-50)/50)*.10*u;
+  }
+  return f;
+}
+function formFL(i){
+  const group=flightGroupForIndex(i);
+  return FL[i]*scaleForGroups([group],'length',true)*FORM.chord*scaleForGroups([group],'chord',false)*formLengthFactor(i,[group])*lengthDistributionFactor(group,flightDistributionU(i));
+}
+function linkedFlightLength(i,linkedGroup){
+  const parent=flightGroupForIndex(i),groups=linkedGroup?[parent,linkedGroup]:[parent];
+  return FL[i]*scaleForGroups(groups,'length',true)*FORM.chord*scaleForGroups(groups,'chord',false)*formLengthFactor(i,groups)*lengthDistributionFactor(parent,flightDistributionU(i));
+}
+function formFW(i){
+  const group=flightGroupForIndex(i),u=flightDistributionU(i);let f=1;
+  if(group==='secondaries'&&FORM_KIND==='highspeed')f=1-.06*u;
+  if(group==='primaries'){
+    if(FORM_KIND==='elliptical')f=1+.04*Math.sin(Math.PI*u);
+    else if(FORM_KIND==='highspeed')f=.98-.16*u;
+    else if(FORM_KIND==='dynamic')f=.98-.09*u;
+    else if(FORM_KIND==='slot')f=1-.04*u;
+    f*=1+((chordDistFor([group])-50)/50)*.04*Math.sin(Math.PI*u);
+  }
+  return FW[i]*FORM.width*scaleForGroups([group],'width',false)*f;
+}
+
+// Reusable combination modifiers: multipliers for scale controls, offsets for distribution/angle controls.
+const MODIFIER_DEFS=[
+ {key:'lengthScale',label:'长度比例',unit:'%',mode:'scale',min:50,max:150,step:1,def:110},
+ {key:'widthScale',label:'宽度比例',unit:'%',mode:'scale',min:50,max:150,step:1,def:110},
+ {key:'chordScale',label:'翼面纵深比例',unit:'%',mode:'scale',min:50,max:150,step:1,def:110,exclude:['axillaries','alula']},
+ {key:'sweepOffset',label:'羽轴后掠偏移',unit:'°',mode:'offset',min:-20,max:20,step:1,def:5},
+ {key:'chordDistOffset',label:'弦长分布偏移',unit:'点',mode:'offset',min:-50,max:50,step:1,def:10,exclude:['axillaries','alula']},
+ {key:'rootDistOffset',label:'根部分布偏移',unit:'点',mode:'offset',min:-50,max:50,step:1,def:10},
+ {key:'fanOffset',label:'初级飞羽扇开偏移',unit:'°',mode:'offset',min:-12,max:12,step:1,def:3,only:['primaries']},
+ {key:'roundnessOffset',label:'翼尖圆钝度偏移',unit:'点',mode:'offset',min:-50,max:50,step:1,def:10,only:['primaries','primaryCoverts']},
+ {key:'gapOffset',label:'分指强度偏移',unit:'点',mode:'offset',min:-100,max:100,step:1,def:10,only:['primaries']},
+ {key:'tipLiftOffset',label:'翼尖离面高度偏移',unit:'mm',mode:'offset',min:-16,max:16,step:1,def:2,only:['primaries']}
+];
+const groupPicker=document.getElementById('groupPicker');
+const groupParamControls=document.getElementById('groupParamControls');
+let activeGroupId='primaries';
+const GROUP_CONTROL_DEFS={
+ lengthScale:{label:'长度比例',unit:'%',mode:'scale',min:50,max:150,step:1,def:100},
+ widthScale:{label:'宽度比例',unit:'%',mode:'scale',min:50,max:150,step:1,def:100},
+ chordScale:{label:'翼面纵深比例',unit:'%',mode:'scale',min:50,max:150,step:1,def:100,exclude:['axillaries','alula']},
+ sweepOffset:{label:'羽轴后掠偏移',unit:'°',mode:'offset',min:-20,max:20,step:1,def:0},
+ rootDistOffset:{label:'羽根分布',unit:'点',mode:'offset',min:-50,max:50,step:1,def:0},
+ chordDistOffset:{label:'弦长分布偏移',unit:'点',mode:'offset',min:-50,max:50,step:1,def:0,exclude:['axillaries','alula']},
+ fanOffset:{label:'初级飞羽扇开偏移',unit:'°',mode:'offset',min:-12,max:12,step:1,def:0,only:['primaries']},
+ roundnessOffset:{label:'翼尖圆钝度偏移',unit:'点',mode:'offset',min:-50,max:50,step:1,def:0,only:['primaries','secondaries','primaryCoverts']},
+ gapOffset:{label:'分指强度偏移',unit:'点',mode:'offset',min:-100,max:100,step:1,def:0,only:['primaries']},
+ tipLiftOffset:{label:'翼尖离面高度偏移',unit:'mm',mode:'offset',min:-16,max:16,step:1,def:0,only:['primaries']}
+};
+function groupParamKeys(groupId){
+ return Object.keys(GROUP_CONTROL_DEFS).filter(key=>{
+  const d=GROUP_CONTROL_DEFS[key];
+  return !(d.only&&!d.only.includes(groupId)) && !(d.exclude&&d.exclude.includes(groupId));
+ });
+}
+function groupControlValue(groupId,key){const d=GROUP_CONTROL_DEFS[key],v=GROUP_PARAMS[groupId][key];return d.mode==='scale'?Math.round(v*100):v;}
+function setGroupControlValue(groupId,key,raw){const d=GROUP_CONTROL_DEFS[key];const v=clamp(Number(raw),d.min,d.max);GROUP_PARAMS[groupId][key]=d.mode==='scale'?v/100:v;}
+function lengthDistRowDescription(groupId){
+ const descriptions={
+  primaries:`初级飞羽 P1–P${FEATHER_COUNTS.primaries}：沿当前首尾羽毛插值。`,
+  secondaries:`次级飞羽 S1–S${FEATHER_COUNTS.secondaries}：沿当前首尾羽毛插值，并按总数量自动定位缺位槽。`,
+  tertials:`三级飞羽 T1–T${FEATHER_COUNTS.tertials}：沿当前首尾羽毛插值。`,
+  primaryCoverts:'初级覆羽：按对应初级飞羽排插值。',
+  greaterCoverts:'大覆羽包含次级飞羽对应排和三级飞羽对应排；两条排各自从首根到末根插值。',
+  medianCoverts:'中覆羽包含背侧主排和掌区排；两条排分别从首根到末根插值。',
+  lesserCoverts:'小覆羽包含小覆羽主排和原缘覆羽子排；两条排分别从首根到末根插值。',
+  axillaries:'原模型单独构建的 3 根腋羽，按第 1 根到第 3 根插值。',
+  alula:'3 根小翼羽按第 1 根到第 3 根插值。'
+ };
+ return descriptions[groupId]||'按所选羽毛组的排列顺序插值。';
+}
+function updateLengthDistributionPreview(){
+ const d=LENGTH_DISTRIBUTIONS[activeGroupId]||{start:100,end:100,curve:'linear',points:[]};
+ const points=[...(d.points||[])].sort((a,b)=>a.position-b.position);
+ const parts=[`首端 ${d.start}%`,...points.map(p=>`${p.position}% 位置 ${p.value}%`),`末端 ${d.end}%`];
+ document.getElementById('lengthDistPreview').textContent=`${GROUP_BY_ID[activeGroupId]?.label||activeGroupId}：${parts.join(' → ')}；${d.curve==='smooth'?'各段平滑渐变':'各段线性渐变'}。`;
+ const status=document.getElementById('lengthDistPointStatus');
+ if(status)status.textContent=points.length?`当前 ${points.length} 个中间参考点。`:'当前没有中间参考点。';
+}
+function renderLengthDistributionPoints(){
+ const root=document.getElementById('lengthDistReferencePoints');if(!root)return;
+ const d=LENGTH_DISTRIBUTIONS[activeGroupId]||{points:[]};
+ const points=Array.isArray(d.points)?d.points:[];
+ root.innerHTML=points.length?points.map((p,i)=>`<div class="length-dist-point" data-point-card="${i}">
+  <div class="length-dist-point-head"><strong>参考点 ${i+1}</strong><button type="button" class="g remove-point" data-remove-length-point="${i}">删除</button></div>
+  <div class="point-control"><label for="ldrp_${i}_position_range"><span>组内位置</span><span id="ldrp_${i}_position_label">${p.position}%</span></label><div class="point-inputs"><input id="ldrp_${i}_position_range" type="range" min="1" max="99" step="1" value="${p.position}" data-ref-index="${i}" data-ref-field="position" aria-label="参考点 ${i+1} 组内位置"><input id="ldrp_${i}_position_number" type="number" min="1" max="99" step="1" value="${p.position}" data-ref-index="${i}" data-ref-field="position" aria-label="参考点 ${i+1} 组内位置百分比"></div></div>
+  <div class="point-control"><label for="ldrp_${i}_value_range"><span>长度倍率</span><span id="ldrp_${i}_value_label">${p.value}%</span></label><div class="point-inputs"><input id="ldrp_${i}_value_range" type="range" min="25" max="200" step="0.1" value="${p.value}" data-ref-index="${i}" data-ref-field="value" aria-label="参考点 ${i+1} 长度倍率"><input id="ldrp_${i}_value_number" type="number" min="25" max="200" step="0.1" value="${p.value}" data-ref-index="${i}" data-ref-field="value" aria-label="参考点 ${i+1} 长度倍率百分比"></div></div>
+ </div>`).join(''):'<p class="sm" style="grid-column:1/-1;margin:0">暂无中间参考点。</p>';
+ root.querySelectorAll('input[data-ref-index]').forEach(input=>input.addEventListener('input',()=>{
+  const idx=Number(input.dataset.refIndex),field=input.dataset.refField,d=LENGTH_DISTRIBUTIONS[activeGroupId],pts=d.points;
+  if(!pts[idx])return;
+  const n=Number(input.value);if(!Number.isFinite(n))return;
+  if(field==='position'){
+   const min=idx===0?1:Math.min(99,pts[idx-1].position+1);
+   const max=idx===pts.length-1?99:Math.max(1,pts[idx+1].position-1);
+   pts[idx].position=clamp(Math.round(n),min,max);
+  }else pts[idx].value=clamp(Math.round(n*10)/10,25,200);
+  const actual=pts[idx][field],suffix=field==='position'?'position':'value';
+  const range=document.getElementById(`ldrp_${idx}_${suffix}_range`),number=document.getElementById(`ldrp_${idx}_${suffix}_number`),label=document.getElementById(`ldrp_${idx}_${suffix}_label`);
+  if(range)range.value=String(actual);if(number)number.value=String(actual);if(label)label.textContent=actual+'%';
+  updateLengthDistributionPreview();updateEffectiveLengths();requestRender();
+ }));
+ root.querySelectorAll('[data-remove-length-point]').forEach(button=>button.addEventListener('click',()=>{
+  const d=LENGTH_DISTRIBUTIONS[activeGroupId];d.points.splice(Number(button.dataset.removeLengthPoint),1);
+  updateLengthDistributionUI();updateEffectiveLengths();requestRender();
+ }));
+ const addButton=document.getElementById('addLengthReferencePoint');if(addButton)addButton.disabled=points.length>=12;
+}
+function updateLengthDistributionUI(){
+ const d=LENGTH_DISTRIBUTIONS[activeGroupId]||{start:100,end:100,curve:'linear',points:[]};
+ for(const [key,rangeId,numId,labelId] of [['start','lengthDistStartRange','lengthDistStartNumber','lengthDistStartLabel'],['end','lengthDistEndRange','lengthDistEndNumber','lengthDistEndLabel']]){
+  document.getElementById(rangeId).value=String(d[key]);document.getElementById(numId).value=String(d[key]);document.getElementById(labelId).textContent=d[key]+'%';
+ }
+ document.getElementById('lengthDistCurve').value=d.curve;
+ renderLengthDistributionPoints();updateLengthDistributionPreview();
+}
+function setLengthDistributionValue(which,raw){
+ const d=LENGTH_DISTRIBUTIONS[activeGroupId],n=Number(raw),v=clamp(Number.isFinite(n)?n:100,25,200);d[which]=v;
+ updateLengthDistributionUI();updateEffectiveLengths();requestRender();
+}
+function renderGroupParams(){
+ groupPicker.innerHTML=GROUP_DEFS.map(g=>`<button type="button" data-pick-group="${g.id}" aria-pressed="${g.id===activeGroupId}">${g.label}</button>`).join('');
+ groupPicker.querySelectorAll('[data-pick-group]').forEach(btn=>btn.addEventListener('click',()=>{activeGroupId=btn.dataset.pickGroup;renderGroupParams();}));
+ const g=GROUP_BY_ID[activeGroupId]||GROUP_DEFS[0],p=GROUP_PARAMS[g.id];
+ groupParamControls.innerHTML=groupParamKeys(g.id).map(key=>{
+  const d=GROUP_CONTROL_DEFS[key],val=groupControlValue(g.id,key),id=`gp_${g.id}_${key}`;
+  const quick=d.mode==='scale'?`<div class="quick-values"><button type="button" class="g" data-quick-group="${key}" data-value="75">75%</button><button type="button" class="g" data-quick-group="${key}" data-value="100">100%</button><button type="button" class="g" data-quick-group="${key}" data-value="125">125%</button></div>`:'';
+  const shown=d.mode==='scale'?`${val}%`:`${val}${d.unit==='点'?'':d.unit}`;
+  return `<div class="range-card"><label for="${id}"><div class="range-title"><span>${d.label}</span><span id="${id}_v">${shown}</span></div><input id="${id}" type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${val}" data-group="${g.id}" data-param="${key}"></label>${quick}</div>`;
+ }).join('');
+ groupParamControls.querySelectorAll('input[data-group]').forEach(input=>input.addEventListener('input',()=>{
+  const {group,param}=input.dataset,d=GROUP_CONTROL_DEFS[param];setGroupControlValue(group,param,input.value);
+  document.getElementById(input.id+'_v').textContent=d.mode==='scale'?`${input.value}%`:`${input.value}${d.unit==='点'?'':d.unit}`;
+  updateEffectiveLengths();requestRender();
+ }));
+ groupParamControls.querySelectorAll('[data-quick-group]').forEach(btn=>btn.addEventListener('click',()=>{
+  const key=btn.dataset.quickGroup,value=Number(btn.dataset.value),input=groupParamControls.querySelector(`input[data-param="${key}"]`);
+  if(!input)return;input.value=String(value);input.dispatchEvent(new Event('input',{bubbles:true}));
+ }));
+ updateLengthDistributionUI();
+}
+function insertLengthReferencePoint(){
+ const d=LENGTH_DISTRIBUTIONS[activeGroupId];if(d.points.length>=12){document.getElementById('lengthDistPointStatus').textContent='每组最多添加 12 个中间参考点。';return;}
+ const knots=[{position:0,value:d.start},...d.points.map(p=>({position:p.position,value:p.value})),{position:100,value:d.end}].sort((a,b)=>a.position-b.position);
+ let best=null;
+ for(let i=0;i<knots.length-1;i++){const gap=knots[i+1].position-knots[i].position;if(gap>1&&(!best||gap>best.gap))best={left:knots[i],right:knots[i+1],gap};}
+ if(!best){document.getElementById('lengthDistPointStatus').textContent='参考点间隔过小，无法再插入新的点。';return;}
+ const position=Math.round((best.left.position+best.right.position)/2);
+ if(position<=best.left.position||position>=best.right.position){document.getElementById('lengthDistPointStatus').textContent='参考点间隔过小，无法再插入新的点。';return;}
+ const value=Math.round(lengthDistributionValue(activeGroupId,position/100)*10)/10;
+ d.points.push({position,value});d.points.sort((a,b)=>a.position-b.position);
+ updateLengthDistributionUI();updateEffectiveLengths();requestRender();
+}
+document.getElementById('addLengthReferencePoint').addEventListener('click',insertLengthReferencePoint);
+document.getElementById('clearLengthReferencePoints').addEventListener('click',()=>{LENGTH_DISTRIBUTIONS[activeGroupId].points=[];updateLengthDistributionUI();updateEffectiveLengths();requestRender();});
+for(const [key,rangeId,numId] of [['start','lengthDistStartRange','lengthDistStartNumber'],['end','lengthDistEndRange','lengthDistEndNumber']]){
+ document.getElementById(rangeId).addEventListener('input',e=>setLengthDistributionValue(key,e.target.value));
+ document.getElementById(numId).addEventListener('input',e=>{if(e.target.value==='')return;setLengthDistributionValue(key,e.target.value);});
+ document.getElementById(numId).addEventListener('change',e=>{setLengthDistributionValue(key,e.target.value);});
+}
+document.getElementById('lengthDistCurve').addEventListener('change',e=>{LENGTH_DISTRIBUTIONS[activeGroupId].curve=e.target.value==='smooth'?'smooth':'linear';updateLengthDistributionUI();updateEffectiveLengths();requestRender();});
+document.getElementById('resetLengthDistribution').addEventListener('click',()=>{LENGTH_DISTRIBUTIONS[activeGroupId]={start:100,end:100,curve:'linear',points:[]};updateLengthDistributionUI();updateEffectiveLengths();requestRender();});
+document.getElementById('resetSelectedGroup').addEventListener('click',()=>{
+ GROUP_PARAMS[activeGroupId]={lengthScale:1,widthScale:1,chordScale:1,sweepOffset:0,chordDistOffset:0,rootDistOffset:0,fanOffset:0,roundnessOffset:0,gapOffset:0,tipLiftOffset:0};
+ LENGTH_DISTRIBUTIONS[activeGroupId]={start:100,end:100,curve:'linear',points:[]};
+ renderGroupParams();updateEffectiveLengths();requestRender();
+});
+const comboTargetsRoot=document.getElementById('comboTargets');
+comboTargetsRoot.innerHTML=GROUP_DEFS.map(g=>`<label><input type="checkbox" value="${g.id}" ${['primaries','secondaries','tertials'].includes(g.id)?'checked':''}> ${g.label}</label>`).join('');
+const comboParam=document.getElementById('comboParam'),comboValue=document.getElementById('comboValue');
+comboParam.innerHTML=MODIFIER_DEFS.map(d=>`<option value="${d.key}">${d.label}</option>`).join('');
+function updateComboValueControl(){const d=MODIFIER_DEFS.find(x=>x.key===comboParam.value)||MODIFIER_DEFS[0];comboValue.min=d.min;comboValue.max=d.max;comboValue.step=d.step;comboValue.value=d.def;document.getElementById('comboValueDisplay').textContent=d.mode==='scale'?`${d.def}%`:`${d.def}${d.unit}`;document.getElementById('comboHint').textContent=d.mode==='scale'?'用滑块按比例缩放：100% 表示不改变，110% 表示增加 10%。':'用滑块设置偏移量：0 表示不改变；只对适用的羽组有效。';}
+comboValue.addEventListener('input',()=>{const d=MODIFIER_DEFS.find(x=>x.key===comboParam.value)||MODIFIER_DEFS[0];document.getElementById('comboValueDisplay').textContent=d.mode==='scale'?`${comboValue.value}%`:`${comboValue.value}${d.unit}`;});
+comboParam.addEventListener('change',updateComboValueControl);
+function saveComboMods(){try{localStorage.setItem('wingFeatherComboModifiersV1',JSON.stringify(COMBO_MODIFIERS));}catch(e){/* storage may be unavailable */}}
+function loadComboMods(){try{const saved=JSON.parse(localStorage.getItem('wingFeatherComboModifiersV1')||'[]');if(Array.isArray(saved))COMBO_MODIFIERS.push(...saved.filter(x=>x&&Array.isArray(x.targets)&&MODIFIER_DEFS.some(d=>d.key===x.param)));nextComboId=COMBO_MODIFIERS.reduce((m,x)=>Math.max(m,Number(x.id)||0),0)+1;}catch(e){}}
+function renderComboTable(){
+ const root=document.getElementById('comboTable');
+ root.innerHTML=COMBO_MODIFIERS.length?COMBO_MODIFIERS.map(m=>{
+  const d=MODIFIER_DEFS.find(x=>x.key===m.param),shown=d?.mode==='scale'?`${m.value}%`:`${m.value}${d?.unit||''}`;
+  return `<div class="combo-item"><div class="combo-item-head"><strong>${escapeHtml(m.name)}</strong><button type="button" class="g" data-remove-combo="${m.id}">删除</button></div><p>目标：${m.targets.map(id=>GROUP_BY_ID[id]?.label||id).join('、')}</p><p>参数：${d?.label||m.param} <span class="value-pill" id="combo_saved_v_${m.id}">${shown}</span></p><input type="range" data-edit-combo-value="${m.id}" min="${d?.min??-100}" max="${d?.max??200}" step="${d?.step??1}" value="${m.value}" aria-label="调整${escapeHtml(m.name)}"></div>`;
+ }).join(''):'<p class="sm">暂无组合修改器。</p>';
+ root.querySelectorAll('[data-edit-combo-value]').forEach(input=>input.addEventListener('input',()=>{const mod=COMBO_MODIFIERS.find(x=>x.id===Number(input.dataset.editComboValue));if(!mod)return;const def=MODIFIER_DEFS.find(x=>x.key===mod.param);const v=Number(input.value);if(Number.isFinite(v))mod.value=clamp(v,def.min,def.max);const val=document.getElementById(`combo_saved_v_${mod.id}`);if(val)val.textContent=def.mode==='scale'?`${mod.value}%`:`${mod.value}${def.unit}`;saveComboMods();updateEffectiveLengths();requestRender();}));
+ root.querySelectorAll('[data-remove-combo]').forEach(btn=>btn.addEventListener('click',()=>{COMBO_MODIFIERS=COMBO_MODIFIERS.filter(x=>x.id!==Number(btn.dataset.removeCombo));saveComboMods();renderComboTable();updateEffectiveLengths();requestRender();}));
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+document.getElementById('addCombo').addEventListener('click',()=>{
+  const targets=[...comboTargetsRoot.querySelectorAll('input:checked')].map(input=>input.value);
+  if(!targets.length){document.getElementById('comboHint').textContent='请至少选择一个羽毛组。';return;}
+  const def=MODIFIER_DEFS.find(x=>x.key===comboParam.value)||MODIFIER_DEFS[0];
+  if(def.only&&targets.some(t=>!def.only.includes(t))){document.getElementById('comboHint').textContent=`“${def.label}”仅适用于：${def.only.map(id=>GROUP_BY_ID[id].label).join('、')}。请调整所选羽组。`;return;}
+  if(def.exclude&&targets.some(t=>def.exclude.includes(t))){document.getElementById('comboHint').textContent=`“${def.label}”不适用于：${def.exclude.filter(t=>targets.includes(t)).map(id=>GROUP_BY_ID[id].label).join('、')}。请取消这些羽组后再添加。`;return;}
+  let value=Number(comboValue.value);if(!Number.isFinite(value)){document.getElementById('comboHint').textContent='请输入有效数值。';return;}value=clamp(value,def.min,def.max);
+  const name=(document.getElementById('comboName').value||`自定义组合 ${nextComboId}`).trim();
+  COMBO_MODIFIERS.push({id:nextComboId++,name,targets,param:def.key,value});
+  document.getElementById('comboName').value=`自定义组合 ${nextComboId}`;
+  saveComboMods();renderComboTable();updateEffectiveLengths();requestRender();
+});
+document.getElementById('resetCombos').addEventListener('click',()=>{COMBO_MODIFIERS=[];saveComboMods();renderComboTable();updateEffectiveLengths();requestRender();});
+document.getElementById('exportCombos').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({version:1,modifiers:COMBO_MODIFIERS},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='wing_feather_combo_modifiers.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+function exportBlenderParameters(){
+ const counts={...FEATHER_COUNTS};
+ const groups=Object.fromEntries(GROUP_DEFS.map(g=>{
+  const p=GROUP_PARAMS[g.id],dist=LENGTH_DISTRIBUTIONS[g.id];
+  return [g.id,{
+   length_scale:p.lengthScale,width_scale:p.widthScale,chord_scale:p.chordScale,
+   sweep_offset:p.sweepOffset,root_dist_offset:p.rootDistOffset,chord_dist_offset:p.chordDistOffset,
+   fan_offset:p.fanOffset,roundness_offset:p.roundnessOffset,gap_offset:p.gapOffset,tip_lift_offset:p.tipLiftOffset,
+   start_pct:dist.start,end_pct:dist.end,curve:dist.curve==='smooth'?'SMOOTH':'LINEAR',length_reference_points:(dist.points||[]).map(p=>({position_pct:Number(p.position),value_pct:Number(p.value)}))
+  }];
+ }));
+ const feathers=FL.map((length,i)=>{
+  const group=flightGroupForIndex(i),local=flightLocalIndex(i);
+  return {id:FN(i),group,local_index:local+1,base_length_mm:Number(length),base_width_mm:Number(FW[i]),root_offset_mm:Number(FEATHER_ROOT_OFFSETS[i]),angle_offset_deg:Number(FEATHER_ANGLE_OFFSETS[i])};
+ });
+ const form={
+  span:FORM.span,chord:FORM.chord,width:FORM.width,sweep:FORM.sweep,fan:FORM.fan,
+  roundness:FORM.roundness,gap:FORM.gap,tip_lift:FORM.tipLift,chord_dist:FORM.chordDist,
+  bone_h:FORM.boneH,bone_f:FORM.boneF,bone_hand:FORM.boneHand,hand_digits:FORM.handDigits,
+  primary_attach:FORM.primaryAttach*100
+ };
+ const payload={
+  schema:'bird-wing-model-parameters',version:1,
+  source:{application:'bird-wing-html',filename:'bird_wing_custom_feather_counts.html'},
+  units:{length:'mm',angle:'deg'},
+  preset:FORM_KIND,global_length_scale:GLOBAL_LENGTH_SCALE,form,
+  bone_base_mm:{humerus:Number(L[0]),forearm:Number(L[1]),handwing:Number(L[2]),shoulder_span:Number(L[3])},
+  counts,derived_counts:{primaryCoverts:counts.primaries,greaterCoverts:counts.secondaries+counts.tertials},
+  groups,feathers,
+  combos:COMBO_MODIFIERS.map(m=>({id:m.id,name:m.name,targets:[...m.targets],param:m.param,value:Number(m.value)})),
+  joints:Q.map((q,i)=>({id:i,label:J[i][0],mean_deg:Number(q.m),amplitude_deg:Number(q.a),phase:Number(q.p)})),
+  motion:{
+   playback_rate:Number(document.getElementById('sp').value),fps:Number(document.getElementById('fpsLimit').value),
+   motion_scale_pct:MOTION_SCALE*100,flight_state:FLIGHT_STATE,flight_gait:FLIGHT_GAIT,
+   turn_strength_deg:TURN_STRENGTH,hover_amp_deg:HOVER_AMP,hover_down_pct:HOVER_DOWN*100,
+   fold_pct:FO*100,finger_offset_deg:FI,valve_angle_deg:VA,shingle_tilt_deg:IM,alula_open_deg:AL,
+   secondary_follow_yellow_reference:SECONDARY_FOLLOW_YELLOW_REFERENCE
+  },
+  active_group:activeGroupId,active_feather:null
+ };
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='wing_model_parameters.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ const status=document.getElementById('parameterExportStatus');if(status)status.textContent=`已生成 JSON：${feathers.length} 根主要飞羽、${Object.keys(groups).length} 个羽组、${COMBO_MODIFIERS.length} 个组合修改器。`;
+}
+document.getElementById('exportBlenderParameters').addEventListener('click',exportBlenderParameters);
+function renderBaseFeatherTable(){
+ const flEdit=document.getElementById('flEdit');
+ flEdit.innerHTML='<tr><th>羽毛</th><th>基础长度（mm）</th><th>基础宽度（mm）</th><th>根部偏移（mm）</th><th>羽轴角度偏移（°）</th><th>当前有效长度</th><th>当前有效宽度</th></tr>'+FL.map((v,i)=>`<tr><td>${FN(i)}</td><td><input type="number" min="1" max="400" step="1" value="${v}" data-fl-index="${i}" data-fl-field="length"></td><td><input type="number" min="1" max="100" step="1" value="${FW[i]}" data-fl-index="${i}" data-fl-field="width"></td><td><input type="number" min="-30" max="30" step="0.5" value="${FEATHER_ROOT_OFFSETS[i]}" data-fl-index="${i}" data-fl-field="root"></td><td><input type="number" min="-45" max="45" step="1" value="${FEATHER_ANGLE_OFFSETS[i]}" data-fl-index="${i}" data-fl-field="angle"></td><td id="effFL${i}"></td><td id="effFW${i}"></td></tr>`).join('');
+ flEdit.querySelectorAll('input[data-fl-index]').forEach(input=>input.addEventListener('input',()=>{
+   const i=Number(input.dataset.flIndex),v=Number(input.value),field=input.dataset.flField;if(!Number.isFinite(v))return;
+   if(field==='length'&&v>0)FL[i]=v;
+   if(field==='width'&&v>0)FW[i]=v;
+   if(field==='root')FEATHER_ROOT_OFFSETS[i]=clamp(v,-30,30);
+   if(field==='angle')FEATHER_ANGLE_OFFSETS[i]=clamp(v,-45,45);
+   updateEffectiveLengths();requestRender();
+ }));
+}
+function updateEffectiveLengths(){
+  FL.forEach((_,i)=>{const cell=document.getElementById(`effFL${i}`),wc=document.getElementById(`effFW${i}`);if(cell)cell.textContent=formFL(i).toFixed(1)+' mm';if(wc)wc.textContent=formFW(i).toFixed(1)+' mm';});
+}
+function resetFeatherModifiers(){
+  GLOBAL_LENGTH_SCALE=1;globalLenInput.value='100';globalLenLabel.textContent='100%';
+  for(const g of GROUP_DEFS){GROUP_PARAMS[g.id]={lengthScale:1,widthScale:1,chordScale:1,sweepOffset:0,chordDistOffset:0,rootDistOffset:0,fanOffset:0,roundnessOffset:0,gapOffset:0,tipLiftOffset:0};LENGTH_DISTRIBUTIONS[g.id]={start:100,end:100,curve:'linear',points:[]};}
+  COMBO_MODIFIERS=[];saveComboMods();renderGroupParams();renderComboTable();
+  renderBaseFeatherTable();updateEffectiveLengths();requestRender();
+}
+document.getElementById('resetFeatherParams').addEventListener('click',resetFeatherModifiers);
+document.getElementById('resetLen').addEventListener('click',()=>{FL.forEach((_,i)=>{FL[i]=FL_BASE[i];FW[i]=FW_BASE[i];FEATHER_ANGLE_OFFSETS[i]=0;FEATHER_ROOT_OFFSETS[i]=0;});renderBaseFeatherTable();updateEffectiveLengths();requestRender();});
+renderGroupParams();renderFeatherCountControls();loadComboMods();renderComboTable();updateComboValueControl();renderBaseFeatherTable();
+
+function fk(a){
+  const [y,r,p,f,o,b,wr]=a.map(v=>v*d),u=[0,-1,0],sh=[0,-L[3],0];
+  const BL=effectiveBoneLengths();
+  const Rs=M(M(Rz(y),Rx(-r)),Ry(p));
+  const e=V(Rs,u).map((v,i)=>sh[i]+v*BL[0]);
+  const Re=M(Rs,Rz(f));
+  const w=V(Re,u).map((v,i)=>e[i]+v*BL[1]);
+  const Rw=M(M(M(Re,Rz(-o)),Rx(-b)),Ry(-wr));
+  const t=V(Rw,u).map((v,i)=>w[i]+v*BL[2]);
+  const res=[sh,e,w,t];res.Re=Re;res.Rw=Rw;return res;
+}
+function wristAngles(k){
+  const a=nrm(sub(k[2],k[1])),c=nrm(sub(k[3],k[2])),tw=180-Math.acos(Math.max(-1,Math.min(1,dt(a,c))))/d;
+  const tf=Math.max(-10,Math.min(32,16-20*(tw-85)/70))+FI;
+  return [tw,tf];
+}
+function thumbGeo(k){
+  const c=sub(k[3],k[2]),ch=nrm(c),a=nrm(sub(k[2],k[1])),tm0=V(k.Rw,[-1,0,0]),trM=nrm(sub(tm0,mul(a,dt(tm0,a)))),leadM=mul(trM,-1),nM=V(k.Rw,[0,0,1]);
+  const al=AL*d*(1-FO),B0=add(add(k[2],mul(c,.05)),mul(leadM,2)),g=al*.8,dirT=nrm(add(mul(ch,c_(g)),mul(nM,s_(g))));
+  return {B0,tip:add(B0,mul(dirT,12)),ch,trM,nM,al};
+}
+function feathers(k,ph){
+  const [tw,tf]=wristAngles(k),a=nrm(sub(k[2],k[1])),c=sub(k[3],k[2]);
+  const g=Math.max(0,-s_(TP*ph)),out=[],flight=[],th=[];
+  const trU=V(k.Re,[-1,0,0]),nU=V(k.Re,[0,0,1]);
+  const tm0=V(k.Rw,[-1,0,0]),trM=nrm(sub(tm0,mul(a,dt(tm0,a)))),nM=V(k.Rw,[0,0,1]);
+  for(let i=0;i<FL.length;i++){
+    const group=flightGroupForIndex(i),local=flightLocalIndex(i),u=flightDistributionU(i),isSecondary=group==='secondaries',isPrimary=group==='primaries',isTertial=group==='tertials';
+    const co=CO[i];
+    const tertialPos=FEATHER_COUNTS.tertials<=1?0:local/(FEATHER_COUNTS.tertials-1)*2;
+    const baseTh=isTertial?clamp(th[Math.max(0,FEATHER_COUNTS.secondaries-1)]-5*(1+tertialPos),0,170):Math.max(0,Math.min(170,co[0]*tw+co[1]*tf+co[2]));
+    const sweep=FORM.sweep*(isSecondary?.45:isPrimary?1:0)+addForGroups([group],'sweepOffset')+FEATHER_ANGLE_OFFSETS[i];
+    const fan=isPrimary?(FORM.fan+addForGroups([group],'fanOffset'))*(u-.5)*2:0;
+    const thf=baseTh+sweep+fan,phi=(180-thf)*d;
+    const pr=!isSecondary,tr=pr?trM:trU,nw=pr?nM:nU;
+    const dir=nrm(add(mul(a,c_(phi)),mul(tr,s_(phi))));
+    const BL=effectiveBoneLengths();
+    let base;
+    if(isTertial){const tu=FEATHER_COUNTS.tertials<=1?0:local/(FEATHER_COUNTS.tertials-1),rootBase=FEATHER_COUNTS.tertials<=1?.8:lerp(.95,.65,tu);base=add(k[0],mul(sub(k[1],k[0]),clamp(distortRootU(rootBase,'tertials')+FEATHER_ROOT_OFFSETS[i]/Math.max(1,BL[0]),0,1)));}
+    else if(isPrimary){base=add(k[2],mul(c,clamp(primaryRootU(local)+FEATHER_ROOT_OFFSETS[i]/Math.max(1,BL[2]),0,1)));}
+    else {const slot=secondarySlotIndex(local),uRoot=.95-.9*slot/Math.max(1,FEATHER_COUNTS.secondaries);base=add(k[1],mul(sub(k[2],k[1]),clamp(distortRootU(uRoot,'secondaries')+FEATHER_ROOT_OFFSETS[i]/Math.max(1,BL[1]),0,1)));}
+    const wgt=pr?u:u*.5; // 内侧→外侧
+    let betaCoefficient=isPrimary?0.5+0.5*u:isTertial?0.5+0.5*(FEATHER_COUNTS.primaries+local)/Math.max(1,FEATHER_COUNTS.primaries-1):0.5*u*0.6;
+    if(isSecondary&&SECONDARY_FOLLOW_YELLOW_REFERENCE){
+      // Optional simple reference transfer: use P1 and T1 as the two reference feathers.
+      const smoothU=u*u*(3-2*u),wristReferenceCoefficient=.5;
+      const elbowReferenceCoefficient=.5+.5*FEATHER_COUNTS.primaries/Math.max(1,FEATHER_COUNTS.primaries-1);
+      betaCoefficient=lerp(wristReferenceCoefficient,elbowReferenceCoefficient,smoothU);
+    }
+    const beta=VA*d*g*betaCoefficient;
+    const n2=nrm(rot(nw,dir,IM*d+beta));
+    let wv=nrm(crs(n2,dir));if(dt(wv,a)<0)wv=mul(wv,-1);
+    const len=formFL(i),W=formFW(i),lf=LF(i),pts=[],N=16;
+    const prof=s=>Math.min(1,s/.25)*(s>.8?Math.sqrt(Math.max(0,1-((s-.8)/.2)**2)):1);
+    const uOuter=isPrimary?u:0;
+    const sepRaw=pr?trM:trU,sepDir=nrm(sub(sepRaw,mul(dir,dt(sepRaw,dir))));
+    const slotU=Math.max(0,(uOuter-.38)/.62);
+    const gap=clamp(FORM.gap+addForGroups([group],'gapOffset'),0,100);
+    const tipLift=Math.max(0,FORM.tipLift+addForGroups([group],'tipLiftOffset'));
+    const split=isPrimary?(gap/100)*30*Math.pow(slotU,1.25):0;
+    const lift=isPrimary?tipLift*Math.pow(uOuter,1.5):0;
+    const centerAt=s=>add(add(add(base,mul(dir,len*s)),mul(sepDir,split*s*s)),mul(n2,lift*s*s*s));
+    for(let j=0;j<=N;j++){const s=j/N,p0=centerAt(s);pts.push(add(p0,mul(wv,W*lf*prof(s))));}
+    for(let j=N;j>=0;j--){const s=j/N,p0=centerAt(s),em=i===19?1-.35*Math.exp(-(((s-.6)/.07)**2)):1;pts.push(sub(p0,mul(wv,W*(1-lf)*prof(s)*em)));}
+    const tip=centerAt(1);
+    const mainFeather={pts,base,tip,pr,cov:false,nm:n2,idx:i,group,id:FN(i)};out.push(mainFeather);flight.push(mainFeather);th.push(thf);
+    const covertGroup=isPrimary?'primaryCoverts':'greaterCoverts';
+    const covertU=u;
+    const linkedLen=linkedFlightLength(i,covertGroup)*(pr?.5:.58)*lengthDistributionFactor(covertGroup,covertU),covertWidthScale=scaleForGroups([covertGroup],'width',false);
+    for(const sd of [1,-1]){const nC=nrm(rot(mul(nw,sd),dir,sd*((IM+4)*d+beta)));let wc=nrm(crs(nC,dir));if(dt(wc,a)<0)wc=mul(wc,-1);
+     const lc=linkedLen,Wc=lc*.22*FORM.width*covertWidthScale,b2=add(base,mul(nC,1.5)),cp=[];
+     const pf=s=>Math.min(1,s/.2)*(s>.7?Math.sqrt(Math.max(0,1-((s-.7)/.3)**2)):1);
+     for(let j=0;j<=N;j++){const s=j/N;cp.push(add(add(b2,mul(dir,lc*s)),mul(wc,Wc*.5*pf(s))));}
+     for(let j=N;j>=0;j--){const s=j/N;cp.push(sub(add(b2,mul(dir,lc*s)),mul(wc,Wc*.5*pf(s))));}
+     out.push({pts:cp,base:b2,tip:add(b2,mul(dir,lc)),pr,cov:true,ly:1,vt:sd<0,nm:nC,group:covertGroup,id:`${covertGroup}:${FN(i)}:${sd<0?'under':'upper'}`});}
+  }
+  // 中覆羽、小覆羽、前翼膜缘覆羽
+  const sk=1-.5*FO,lead=mul(trU,-1),leadM=mul(trM,-1);
+  const bone=f=>add(k[1],mul(sub(k[2],k[1]),f));
+  const mkc=(base,thr,nw0,len,ly,pr,bt,tilt,wr,sd,groupId,id)=>{sd=sd||1;const nw=mul(nw0,sd);
+    const phi=(180-thr)*d,dir=nrm(add(mul(a,c_(phi)),mul(pr?trM:trU,s_(phi))));
+    const groupAngle=addForGroups([groupId],'sweepOffset');
+    const nC=nrm(rot(nw,dir,sd*((tilt+groupAngle)*d+bt)));let wc=nrm(crs(nC,dir));if(dt(wc,a)<0)wc=mul(wc,-1);
+    const b2=add(base,mul(nC,1.5+ly)),Wc=len*(wr||.26)*FORM.width*scaleForGroups([groupId],'width',false),cp=[],N=12;
+    const pf=s=>Math.min(1,s/.2)*(s>.7?Math.sqrt(Math.max(0,1-((s-.7)/.3)**2)):1);
+    for(let j=0;j<=N;j++){const u=j/N;cp.push(add(add(b2,mul(dir,len*u)),mul(wc,Wc*.5*pf(u))));}
+    for(let j=N;j>=0;j--){const u=j/N;cp.push(sub(add(b2,mul(dir,len*u)),mul(wc,Wc*.5*pf(u))));}
+    out.push({pts:cp,base:b2,tip:add(b2,mul(dir,len)),pr,cov:true,ly,vt:sd<0,nm:nC,group:groupId,id:id||`${groupId}:${ly}:${sd<0?'under':'upper'}`});};
+  const bS=i=>VA*d*g*.3*(i/9)*.8;
+  // 前翼膜线 L：肱骨近端点 P0到腕；骨线 U：腕→肘→P0。各排羽根位于 L 与 U 之间的混合线上
+  const lw=Math.hypot(...sub(k[2],k[1])),lh=Math.hypot(...sub(k[1],k[0])),P0=add(k[0],mul(sub(k[1],k[0]),.65)),lo=lh*.35,Lt=lw+lo;
+  const Upt=dd=>dd<=lw?add(k[2],mul(sub(k[1],k[2]),dd/lw)):add(k[1],mul(sub(P0,k[1]),Math.min(1,(dd-lw)/lo)));
+  const refs=[];for(let i=0;i<FEATHER_COUNTS.secondaries;i++){const slot=secondarySlotIndex(i),idx=flightIndex('secondaries',i);refs.push([(.05+.9*slot/Math.max(1,FEATHER_COUNTS.secondaries))*lw,th[idx],idx]);}
+  for(let j=0;j<FEATHER_COUNTS.tertials;j++){const tu=FEATHER_COUNTS.tertials<=1?0:j/(FEATHER_COUNTS.tertials-1),idx=flightIndex('tertials',j);refs.push([lw+(.05+.30*tu)*lh,th[idx],idx]);}
+  const rf=(dd,n)=>{if(dd<=refs[0][0])return refs[0][n];for(let q=1;q<refs.length;q++)if(dd<=refs[q][0]){const r=(dd-refs[q-1][0])/(refs[q][0]-refs[q-1][0]);return lerp(refs[q-1][n],refs[q][n],r);}return refs[refs.length-1][n];};
+  const rfLen=(dd,groupId)=>{if(dd<=refs[0][0])return linkedFlightLength(refs[0][2],groupId);for(let q=1;q<refs.length;q++)if(dd<=refs[q][0]){const r=(dd-refs[q-1][0])/(refs[q][0]-refs[q-1][0]);return lerp(linkedFlightLength(refs[q-1][2],groupId),linkedFlightLength(refs[q][2],groupId),r);}return linkedFlightLength(refs[refs.length-1][2],groupId);};
+  // 图一分类：中覆羽、小覆羽；原“缘覆羽”作为小覆羽组内部子排保留。
+  for(const [ly,n,lam,kap,lr,wr,tl,groupId,subtype] of [[2,FEATHER_COUNTS.medianCoverts,.8,.25,.36,.26,IM+6,'medianCoverts','median'],[3,FEATHER_COUNTS.lesserCoverts,.45,.45,.23,.3,IM+8,'lesserCoverts','lesser'],[4,FEATHER_COUNTS.lesserCoverts,0,.55,.2,.4,IM+10,'lesserCoverts','marginal']]){
+    for(let m=0;m<n;m++){const rowU=m/(n-1),sBase=.06+.89*rowU,sS=distortRootU(sBase,groupId),dd=sS*Lt,Lp=add(k[2],mul(sub(P0,k[2]),sS)),pt=add(mul(Lp,1-lam),mul(Upt(dd),lam)),ang0=rf(dd,1)*(1-kap)+90*kap,distScale=lengthDistributionFactor(groupId,rowU);
+      for(const sd of [1,-1])mkc(pt,ang0,nU,rfLen(dd,groupId)*lr*distScale,ly,false,bS(Math.min(9,Math.round(9*dd/lw))),tl,wr,sd,groupId,`${subtype}${m+1}:${sd<0?'under':'upper'}`);}
+  }
+  // 腋羽：原模型单独构建的 3 根模型扩展羽组，非肩羽。
+  const axBase=[64,60,56];
+  for(let j=0;j<FEATHER_COUNTS.axillaries;j++){const u0=FEATHER_COUNTS.axillaries<=1?0:j/(FEATHER_COUNTS.axillaries-1),u=distortRootU(lerp(.9,.5,u0),'axillaries'),axBasePos=add(k[0],mul(sub(k[1],k[0]),u)),axLen=extrapolateProfile(axBase,j,12,100)*GLOBAL_LENGTH_SCALE*scaleForGroups(['axillaries'],'length',false)*lengthDistributionFactor('axillaries',u0),axLocalT=FEATHER_COUNTS.tertials<=1?0:Math.min(FEATHER_COUNTS.tertials-1,Math.round(u0*(FEATHER_COUNTS.tertials-1))),
+    axAng=(FEATHER_COUNTS.axillaries===DEFAULT_FEATHER_COUNTS.axillaries&&FEATHER_COUNTS.tertials===DEFAULT_FEATHER_COUNTS.tertials)?th[flightIndex('tertials',axLocalT)]:flightAngleAtU('tertials',u0,th);
+    mkc(axBasePos,axAng,nU,axLen,1,false,bS(9),IM+4,.34,-1,'axillaries',`axillary${j+1}`);}
+  // 掌区中覆羽：仍使用原模型的跨腕双线定位规则。
+  {const Q=add(k[1],mul(sub(k[2],k[1]),.75));
+   for(let i=0;i<FEATHER_COUNTS.palmMedianCoverts;i++){const rowU=FEATHER_COUNTS.palmMedianCoverts<=1?0:i/(FEATHER_COUNTS.palmMedianCoverts-1),sS=distortRootU(.12+.78*rowU,'medianCoverts'),j=Math.max(0,Math.min(FEATHER_COUNTS.primaries-1,Math.round(((sS-.1)/.88)*(FEATHER_COUNTS.primaries-1)))),pIdx=flightIndex('primaries',j),primaryU=clamp((sS-.1)/.88,0,1),
+     palmReferenceAngle=(FEATHER_COUNTS.palmMedianCoverts===DEFAULT_FEATHER_COUNTS.palmMedianCoverts&&FEATHER_COUNTS.primaries===DEFAULT_FEATHER_COUNTS.primaries)?th[pIdx]:flightAngleAtU('primaries',primaryU,th);
+     const Up=add(k[2],mul(c,sS)),Lp=add(Q,mul(sub(k[3],Q),sS)),pt=add(mul(Lp,.25),mul(Up,.75));
+     for(const sd of [1,-1])mkc(pt,palmReferenceAngle*.6+90*.4,nM,linkedFlightLength(pIdx,'medianCoverts')*.3*lengthDistributionFactor('medianCoverts',rowU),2,true,VA*d*g*(.5+.5*primaryU)*.8,IM+6,undefined,sd,'medianCoverts',`palmMedian${i+1}:${sd<0?'under':'upper'}`);}}
+  // 拇指和可调数量的小翼羽：新增数量沿默认附着分布平滑外推。
+  if(SHOWA){const T=thumbGeo(k),AF=[[38,12],[34,10],[28,8]];
+    for(let j=0;j<FEATHER_COUNTS.alula;j++){
+      const uAl=FEATHER_COUNTS.alula<=1?0:j/(FEATHER_COUNTS.alula-1);
+      const rootCurve=uAl<=.5?lerp(.6,.85,uAl*2):lerp(.85,1,(uAl-.5)*2);
+      const rootU=distortRootU(rootCurve,'alula'),base=add(T.B0,mul(sub(T.tip,T.B0),rootU)),psi=(3+4*j+addForGroups(['alula'],'sweepOffset'))*d,dir=nrm(add(add(mul(T.ch,c_(psi)),mul(T.trM,s_(psi))),mul(T.nM,Math.tan(T.al*.35))));
+      const tl=IM*d+T.al,sg=dt(rot(T.nM,dir,.1),T.trM)>dt(T.nM,T.trM)?1:-1;
+      const nC=nrm(rot(T.nM,dir,sg*tl));let wc=nrm(crs(nC,dir));if(dt(wc,T.trM)>0)wc=mul(wc,-1);
+      const len=extrapolateProfile(AF.map(v=>v[0]),j,10,80)*GLOBAL_LENGTH_SCALE*scaleForGroups(['alula'],'length',false)*lengthDistributionFactor('alula',uAl),Wc=extrapolateProfile(AF.map(v=>v[1]),j,3,30)*FORM.width*scaleForGroups(['alula'],'width',false),b2=add(base,mul(nC,1.5+3)),cp=[],N=12;
+      const pf=u=>Math.min(1,u/.2)*(u>.75?Math.sqrt(Math.max(0,1-((u-.75)/.25)**2)):1);
+      for(let q=0;q<=N;q++){const u=q/N;cp.push(add(add(b2,mul(dir,len*u)),mul(wc,Wc*.35*pf(u))));}
+      for(let q=N;q>=0;q--){const u=q/N;cp.push(sub(add(b2,mul(dir,len*u)),mul(wc,Wc*.65*pf(u))));}
+      out.push({pts:cp,base:b2,tip:add(b2,mul(dir,len)),pr:true,cov:true,ly:5,nm:nC,group:'alula',id:`alula${j+1}`});}
+  }
+  return {out,flight,th,tw,tf,beta:VA*g};
+}
+const elev=(p,s)=>Math.atan2(p[2]-s[2],Math.hypot(p[0]-s[0],p[1]-s[1]))/d;
+function P(p){
+  const x=p[0]*c_(az)-p[1]*s_(az),y=p[0]*s_(az)+p[1]*c_(az);
+  return [W/2+x*sc,H*0.55-(p[2]*c_(el)+y*s_(el))*sc];
+}
+const DP=p=>{const y=p[0]*s_(az)+p[1]*c_(az);return y*c_(el)-p[2]*s_(el);};
+const mir=p=>[p[0],-p[1],p[2]];
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function stats(){
+  let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9,wp=[],tp=[];
+  for(let i=0;i<120;i++){const k=fk(ang(i/120)),ew=elev(k[2],k[0]),et=elev(k[3],k[0]);
+    a0=Math.min(a0,ew);a1=Math.max(a1,ew);b0=Math.min(b0,et);b1=Math.max(b1,et);wp.push(k[2]);tp.push(k[3]);}
+  return {a0,a1,b0,b1,wp,tp};
+}
+let ST=stats();
+function line(a,b,col,w){cx.strokeStyle=col;cx.lineWidth=w;cx.lineCap='round';cx.beginPath();cx.moveTo(...P(a));cx.lineTo(...P(b));cx.stroke();}
+function dot(p,r,col){const q=P(p);cx.fillStyle=col;cx.beginPath();cx.arc(q[0],q[1],r,0,TP);cx.fill();}
+function path(pts,col){cx.strokeStyle=col;cx.lineWidth=1;cx.beginPath();pts.forEach((p,i)=>{const q=P(p);i?cx.lineTo(q[0],q[1]):cx.moveTo(q[0],q[1])});cx.closePath();cx.stroke();}
+function draw(k,F){
+  cx.clearRect(0,0,W,H);
+  const b1=css('--b1'),b2=css('--b2'),b3=css('--b3'),bd=css('--bd'),tr=css('--tr');
+  if(SHOWT){path(ST.wp,tr);path(ST.tp,tr);}
+  line([-90,0,0],[45,0,0],bd,8);
+  line([0,-L[3],0],[0,L[3],0],bd,4);
+  if(SHOWF){
+    const polys=[];
+    const T=[-s_(az)*c_(el),-c_(az)*c_(el),s_(el)];
+    const showGroup={primaryCoverts:document.getElementById('show_primaryCoverts').checked,greaterCoverts:document.getElementById('show_greaterCoverts').checked,medianCoverts:document.getElementById('show_medianCoverts').checked,lesserCoverts:document.getElementById('show_lesserCoverts').checked,axillaries:document.getElementById('show_axillaries').checked,alula:SHOWA};
+    for(const m of [false,true])F.out.forEach(f=>{if(f.vt&&!SHOWV)return;if(f.cov&&f.group&&showGroup[f.group]===false)return;const pp=m?f.pts.map(mir):f.pts,bs=m?mir(f.base):f.base,tp=m?mir(f.tip):f.tip,nm=m?mir(f.nm):f.nm;
+      polys.push({pp,bs,tp,pr:f.pr,cov:f.cov,rk:f.cov?(dt(nm,T)>0?f.ly:-f.ly):0,dp:pp.reduce((s,p)=>s+DP(p),0)/pp.length});});
+    polys.sort((a,b)=>a.rk-b.rk||b.dp-a.dp);
+    const fp=css('--fp'),fs=css('--fs'),cp_=css('--cp'),cs_=css('--cs');
+    for(const q of polys){
+      cx.globalAlpha=q.cov?.9:.78;cx.fillStyle=q.cov?(q.pr?cp_:cs_):(q.pr?fp:fs);cx.beginPath();q.pp.forEach((p,i)=>{const z=P(p);i?cx.lineTo(z[0],z[1]):cx.moveTo(z[0],z[1]);});cx.closePath();cx.fill();
+      cx.globalAlpha=.55;cx.strokeStyle=bd;cx.lineWidth=.6;cx.stroke();
+      cx.globalAlpha=.8;cx.lineWidth=.8;cx.beginPath();cx.moveTo(...P(q.bs));cx.lineTo(...P(q.tp));cx.stroke();cx.globalAlpha=1;
+    }
+    if(SHOWO){
+      // Approximate the perimeter from the leading-edge skeleton and the ordered flight-feather tips.
+      const flight=F.flight, contour=[k[0],k[1],k[2],handJointPoint(k),k[3]];
+      for(let i=FEATHER_COUNTS.secondaries+FEATHER_COUNTS.primaries-1;i>=FEATHER_COUNTS.secondaries;i--)if(flight[i])contour.push(flight[i].tip);
+      for(let i=FEATHER_COUNTS.secondaries-1;i>=0;i--)if(flight[i])contour.push(flight[i].tip);
+      for(const mirrorWing of [false,true])path(mirrorWing?contour.map(mir):contour,css('--b3'));
+    }
+  }
+  for(const m of [false,true]){
+    const f=m?mir:(p=>p),[s,e,w,tp]=k.map(f);
+    if(SHOWS){
+      // Humerus; forearm is shown as adjacent ulna + radius rather than one single rod.
+      line(s,e,b1,5.5);line(e,w,b2,3.7);
+      const fore=nrm(sub(k[2],k[1]));let radialOff=nrm(crs(fore,[0,0,1]));
+      if(Math.hypot(...radialOff)<.01)radialOff=nrm(crs(fore,[1,0,0]));
+      radialOff=mul(radialOff,2.2);
+      line(f(add(k[1],mul(radialOff,.8))),f(add(k[2],mul(radialOff,.55))),b2,1.8);
+      // Hand-wing distinction: carpometacarpus followed by simplified phalanges/digital rays.
+      const hj=handJointPoint(k),side=nrm(V(k.Rw,[1,0,0]));
+      line(w,f(hj),b3,3.2);
+      line(f(hj),f(add(k[3],mul(side,2))),b3,2.0);
+      line(f(hj),f(add(k[3],mul(side,-2))),b3,1.8);
+      // Small proximal digit-I/alula support branch.
+      const iBase=add(k[2],mul(sub(hj,k[2]),.30));
+      line(f(iBase),f(add(iBase,mul(side,4))),b3,1.4);
+    }else{line(s,e,b1,6);line(e,w,b2,5);line(w,tp,b3,4);}
+    dot(s,5,bd);dot(e,5,b1);dot(w,5,b2);dot(tp,3,b3);
+    if(SHOWA){const T=thumbGeo(k);line(f(T.B0),f(T.tip),b3,3);}
+  }
+  const hd=P([60,0,0]);cx.fillStyle=bd;cx.beginPath();cx.arc(hd[0],hd[1],7,0,TP);cx.fill();
+}
+function size(){const r=Math.min(window.devicePixelRatio||1,1.5);W=cv.clientWidth;H=cv.clientHeight;cv.width=Math.round(W*r);cv.height=Math.round(H*r);cx.setTransform(r,0,0,r,0,0);const envelope=1+Math.max(0,FORM.span-1)*.28;sc=Math.min(W/700,H/380)/envelope;requestRender();}
+const f0=v=>(v>=0?'+':'')+v.toFixed(0)+'°';
+function upd(k,F){
+  const ph=((t-Q[1].p)%1+1)%1;
+  document.getElementById('ph').textContent=(ph<0.5?'下拍 ':'上拍 ')+(t*125).toFixed(0)+' ms';
+  const ts=document.getElementById('tt');if(Math.abs(Number(ts.value)-t)>0.003)ts.value=t;
+}
+let renderPending=false,animationTimer=null,lastFrameTime=0;
+function renderModel(){
+  const k=fk(ang(t));
+  const ph=((t-Q[1].p)%1+1)%1;
+  const F=feathers(k,ph);
+  upd(k,F);
+  draw(k,F);
+}
+function requestRender(){
+  if(play||renderPending)return;
+  renderPending=true;
+  requestAnimationFrame(()=>{renderPending=false;if(!play)renderModel();});
+}
+function animationFrame(now){
+  if(!play){animationTimer=null;return;}
+  const dt=lastFrameTime?Math.min((now-lastFrameTime)/1000,.12):0;
+  lastFrameTime=now;
+  t=(t+dt*Number(document.getElementById('sp').value))%1;
+  renderModel();
+  const fps=Math.max(10,Math.min(60,Number(document.getElementById('fpsLimit').value)||30));
+  const delay=Math.max(0,1000/fps-(performance.now()-now));
+  animationTimer=setTimeout(()=>animationFrame(performance.now()),delay);
+}
+function setPlaying(on){
+  play=!!on;
+  document.getElementById('pp').textContent=play?'暂停':'播放';
+  if(animationTimer!==null){clearTimeout(animationTimer);animationTimer=null;}
+  if(play){lastFrameTime=0;animationFrame(performance.now());}
+  else{lastFrameTime=0;requestRender();}
+}
+const jp=document.getElementById('jp');
+J.forEach((j,i)=>{
+  const div=document.createElement('div');div.className='jr';
+  div.innerHTML=`<b>${j[0]}</b><div class="g3"><label>均值 <span id="m${i}"></span><input type="range" min="-120" max="150" step="1" value="${Q[i].m}"></label><label>幅值 <span id="a${i}"></span><input type="range" min="0" max="90" step="1" value="${Q[i].a}"></label><label>相位 <span id="p${i}"></span><input type="range" min="0" max="1" step="0.01" value="${Q[i].p}"></label></div>`;
+  jp.appendChild(div);
+  const ins=div.querySelectorAll('input'),sp=['m','a','p'];
+  jointControlRefs[i]={mean:ins[0],amp:ins[1],phase:ins[2],ampLabel:document.getElementById('a'+i)};
+  ins.forEach((inp,n)=>{const sh=()=>document.getElementById(sp[n]+i).textContent=inp.value;sh();
+    inp.oninput=()=>{Q[i][sp[n]]=+inp.value;sh();ST=stats();};});
+});
+const lp=document.getElementById('lp');
+['肱骨基准长度','前臂基准长度','手翼基准长度','肩宽的一半'].forEach((n,i)=>{
+  const l=document.createElement('label');l.className='sm';l.innerHTML=n+' <input type="number" step="0.5" min="5" max="120" value="'+L[i]+'">';
+  l.querySelector('input').oninput=e=>{L[i]=+e.target.value||L[i];ST=stats();size();updateMorphStats();};lp.appendChild(l);
+});
+[['fo',v=>{FO=v/100;ST=stats();}],['fi',v=>{FI=v;}],['va',v=>{VA=v;}],['im',v=>{IM=v;}],['al',v=>{AL=v;}]].forEach(([id,fn])=>{const el_=document.getElementById(id),sp=document.getElementById(id+'_v');el_.oninput=()=>{sp.textContent=el_.value;fn(+el_.value);};});
+document.getElementById('secondaryFollowYellowReference').addEventListener('change',e=>{SECONDARY_FOLLOW_YELLOW_REFERENCE=e.target.checked;requestRender();});
+document.getElementById('fe').onchange=e=>{SHOWF=e.target.checked;};
+document.getElementById('wo').onchange=e=>{SHOWO=e.target.checked;};
+document.getElementById('tr').onchange=e=>{SHOWT=e.target.checked;};
+document.getElementById('ae').onchange=e=>{SHOWA=e.target.checked;};
+document.getElementById('vc').onchange=e=>{SHOWV=e.target.checked;};
+document.getElementById('sk').onchange=e=>{SHOWS=e.target.checked;};
+for(const id of ['show_primaryCoverts','show_greaterCoverts','show_medianCoverts','show_lesserCoverts','show_axillaries'])document.getElementById(id).onchange=requestRender;
+document.getElementById('pp').onclick=()=>setPlaying(!play);
+document.getElementById('tt').oninput=e=>{t=+e.target.value;};
+function syncMotionControls(){
+  const sp=document.getElementById('sp'),spValue=document.getElementById('spValue');
+  if(sp&&spValue)spValue.textContent=Number(sp.value).toFixed(2)+'×';
+  const amp=document.getElementById('motionScale'),ampLabel=document.getElementById('motionScale_v');
+  if(amp&&ampLabel)ampLabel.textContent=amp.value+'%';
+  const turn=document.getElementById('turnStrength'),turnLabel=document.getElementById('turnStrength_v');
+  if(turn&&turnLabel)turnLabel.textContent=turn.value+'°';
+  const hoverAmp=document.getElementById('hoverAmp'),hoverAmpLabel=document.getElementById('hoverAmp_v');
+  if(hoverAmp&&hoverAmpLabel)hoverAmpLabel.textContent=hoverAmp.value+'°';
+  const hoverDown=document.getElementById('hoverDown'),hoverDownLabel=document.getElementById('hoverDown_v');
+  if(hoverDown&&hoverDownLabel)hoverDownLabel.textContent=hoverDown.value+'%';
+  const hoverControls=document.getElementById('hoverControls');
+  if(hoverControls)hoverControls.style.display=FLIGHT_GAIT==='hover'?'block':'none';
+  const state=document.getElementById('flightState'),gait=document.getElementById('flightGait'),status=document.getElementById('motionStatus');
+  if(status&&state&&gait)status.textContent='当前状态：'+state.options[state.selectedIndex].text+'；步态：'+gait.options[gait.selectedIndex].text+'。';
+}
+document.getElementById('sp').addEventListener('input',syncMotionControls);
+document.getElementById('motionScale').addEventListener('input',e=>{MOTION_SCALE=Number(e.target.value)/100;syncMotionControls();requestRender();});
+document.getElementById('flightState').addEventListener('change',e=>{FLIGHT_STATE=e.target.value;syncMotionControls();requestRender();});
+document.getElementById('flightGait').addEventListener('change',e=>{FLIGHT_GAIT=e.target.value;syncMotionControls();requestRender();});
+document.getElementById('turnStrength').addEventListener('input',e=>{TURN_STRENGTH=Number(e.target.value);syncMotionControls();requestRender();});
+document.getElementById('hoverAmp').addEventListener('input',e=>{HOVER_AMP=Number(e.target.value);syncMotionControls();requestRender();});
+document.getElementById('hoverDown').addEventListener('input',e=>{HOVER_DOWN=Number(e.target.value)/100;syncMotionControls();requestRender();});
+function resetAll(){
+  // Keep original motion and playback implementation; reset geometry and all parameter layers in place.
+  setPlaying(false);
+  t=0; az=75*d; el=18*d; drag=null;
+  document.getElementById('tt').value='0';
+  document.getElementById('sp').value='0.4';
+  document.getElementById('fpsLimit').value='30';
+  FLIGHT_STATE='cruise'; FLIGHT_GAIT='continuous'; MOTION_SCALE=1; TURN_STRENGTH=18; HOVER_AMP=107; HOVER_DOWN=.48;
+  document.getElementById('flightState').value='cruise'; document.getElementById('flightGait').value='continuous';
+  document.getElementById('motionScale').value='100'; document.getElementById('turnStrength').value='18'; document.getElementById('hoverAmp').value='107'; document.getElementById('hoverDown').value='48';
+  syncMotionControls();
+  FO=0; FI=0; VA=25; IM=6; AL=15;
+  SECONDARY_FOLLOW_YELLOW_REFERENCE=false;
+  document.getElementById('secondaryFollowYellowReference').checked=false;
+  const motionDefaults={fo:0,fi:0,va:25,im:6,al:15};
+  for(const [id,value] of Object.entries(motionDefaults)){const slider=document.getElementById(id),label=document.getElementById(id+'_v');slider.value=String(value);label.textContent=String(value)+(id==='fo'?'%':'°');}
+  [48.3,60,38,15].forEach((value,i)=>{L[i]=value;});
+  document.querySelectorAll('#lp input[type="number"]').forEach((input,i)=>input.value=L[i]);
+  resetAllFeatherCounts();
+  resetFeatherModifiers();
+  FL_BASE.forEach((value,i)=>{FL[i]=value;FW[i]=FW_BASE[i];FEATHER_ANGLE_OFFSETS[i]=0;FEATHER_ROOT_OFFSETS[i]=0;});
+  applyFormPreset('pigeon');
+  // Restore original joint defaults, including the original movement parameters.
+  Q.forEach((q,i)=>{q.m=J[i][1];q.a=J[i][2];q.p=J[i][3];const refs=jointControlRefs[i];if(refs){refs.mean.value=q.m;refs.amp.value=q.a;refs.phase.value=q.p;}const ml=document.getElementById('m'+i),al=document.getElementById('a'+i),pl=document.getElementById('p'+i);if(ml)ml.textContent=q.m;if(al)al.textContent=q.a;if(pl)pl.textContent=q.p;});
+  SHOWF=true; SHOWO=true; SHOWT=false; SHOWV=true; SHOWS=true; SHOWA=true;
+  for(const id of ['fe','wo','vc','sk','ae','show_primaryCoverts','show_greaterCoverts','show_medianCoverts','show_lesserCoverts','show_axillaries']){const el=document.getElementById(id);if(el)el.checked=true;}
+  document.getElementById('tr').checked=false;
+  ST=stats();updateMorphStats();renderBaseFeatherTable();updateEffectiveLengths();size();requestRender();
+}
+document.getElementById('rs').onclick=resetAll;
+cv.onpointerdown=e=>{drag=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId);};
+cv.onpointermove=e=>{if(!drag)return;az+=(e.clientX-drag[0])*0.01;el=Math.max(-1.2,Math.min(1.4,el+(e.clientY-drag[1])*0.01));drag=[e.clientX,e.clientY];requestRender();};
+cv.onpointerup=()=>{drag=null;};
+addEventListener('resize',size);
+// Delegated invalidation: controls request a single redraw when paused; while playing, the animation loop owns rendering.
+document.addEventListener('input',e=>{if(e.target.matches('input,select'))requestRender();});
+document.addEventListener('change',e=>{if(e.target.matches('input,select'))requestRender();});
+
+// 可切换左右分区和上下分区；窄屏自动堆叠以保证可用性。
+const workspace=document.getElementById('workspace');
+function setWorkspaceLayout(mode){
+ const split=mode==='split';workspace.classList.toggle('layout-split',split);workspace.classList.toggle('layout-stacked',!split);
+ document.getElementById('layoutSplit').setAttribute('aria-pressed',String(split));document.getElementById('layoutStack').setAttribute('aria-pressed',String(!split));
+ try{localStorage.setItem('wingModelWorkspaceLayout',mode);}catch(e){}
+ requestAnimationFrame(()=>size());
+}
+document.getElementById('layoutSplit').addEventListener('click',()=>setWorkspaceLayout('split'));
+document.getElementById('layoutStack').addEventListener('click',()=>setWorkspaceLayout('stacked'));
+try{const savedLayout=localStorage.getItem('wingModelWorkspaceLayout');if(savedLayout==='stacked')setWorkspaceLayout('stacked');else setWorkspaceLayout('split');}catch(e){setWorkspaceLayout('split');}
+
+syncMotionControls();size();updateMorphStats();renderBaseFeatherTable();updateEffectiveLengths();requestRender();
+</script></body></html>
